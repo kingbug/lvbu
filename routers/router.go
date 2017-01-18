@@ -40,8 +40,11 @@ func init() {
 	//镜像
 	beego.Router("/mirrlist", &mirror.MirController{}, "*:List")
 	beego.Router("/mirredit", &mirror.MirController{}, "*:Edit")
-	beego.Router("/mirradd", &mirror.MirController{}, "*:Add")
-	beego.Router("/mirrgroupadd", &mirror.MirController{}, "get:Gadd;post:Post")
+	beego.Router("/mirradd", &mirror.MirController{}, "get:Add;post:AddPost")
+	beego.Router("/mirrgroupadd", &mirror.MirController{}, "get:Gadd;post:GaddPost")
+	beego.Router("/jqmirrlist", &mirror.MirController{}, "*:JQlist")
+	beego.Router("/jqmirr", &mirror.MirController{}, "*:JQmirr")
+	beego.Router("/jqrmmir", &mirror.MirController{}, "*:JQrmmirr")
 	//环境
 	beego.Router("/env", &env.EnvController{}, "*:List")
 	//系统

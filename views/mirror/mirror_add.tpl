@@ -46,29 +46,28 @@
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-body">
-                            <form class="form-horizontal" method="post"  action="#">
+                            <form class="form-horizontal" action="" method="post">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">镜像名称</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control"  id="inputName"
+                                        <input type="text" class="form-control" id="inputName" name="mirname"
                                                placeholder="中文，用于登记镜像名称">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">镜像类型</label>
-                                    <div class="col-sm-10">                                       
-                                            <label>
-                                                <input type="radio" name="r1" class="minimal">基础镜像
+                                    <div class="col-sm-10">    
+										{{ range .mirgs}}
+											<label>
+                                                <input type="radio" name="mirrorgroup" class="minimal" value="{{ .Id }}">{{ .Name }}
                                             </label>
-                                            <label>
-                                                <input type="radio" name="r1" class="minimal">应用镜像
-                                            </label>                                       
+										{{end}}                                                                          
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">镜像地址</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="镜像地址">
+                                        <input type="text" class="form-control" id="inputName" placeholder="镜像地址" name="hubaddress">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -90,23 +89,23 @@
 <!-- ./wrapper -->
 
 <!-- jQuery 2.2.3 -->
-<script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script src="static/plugins/jQuery/jquery-2.2.3.min.js"></script>
 <!-- Bootstrap 3.3.6 -->
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="static/bootstrap/js/bootstrap.min.js"></script>
 <!-- DataTables -->
-<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
 <!-- Select2 -->
-<link rel="stylesheet" href="/static/plugins/select2/select2.min.css">
-<script src="/static/plugins/select2/select2.full.min.js"></script>
+<link rel="stylesheet" href="static/plugins/select2/select2.min.css">
+<script src="static/plugins/select2/select2.full.min.js"></script>
 <!-- SlimScroll -->
-<script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<script src="static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <!-- FastClick -->
-<script src="/static/plugins/fastclick/fastclick.js"></script>
+<script src="static/plugins/fastclick/fastclick.js"></script>
 <!-- AdminLTE App -->
-<script src="/static/js/app.min.js"></script>
+<script src="static/js/app.min.js"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="/static/js/demo.js"></script>
+<script src="static/js/demo.js"></script>
 <!-- page script -->
 <script>
     $(function () {

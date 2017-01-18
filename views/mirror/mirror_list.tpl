@@ -3,18 +3,18 @@
 <head>
     {{template "common/meta.tpl" .}}
     <!-- Bootstrap 3.3.6 -->
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
     <!-- DataTables -->
-    <link rel="stylesheet" href="/static/plugins/datatables/dataTables.bootstrap.css">
+    <link rel="stylesheet" href="static/plugins/datatables/dataTables.bootstrap.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="static/css/AdminLTE.min.css">
     <!-- AdminLTE Skins. Choose a skin from the css/skins
          folder instead of downloading all of them to reduce the load. -->
-    <link rel="stylesheet" href="/static/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="static/css/skins/_all-skins.min.css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -24,6 +24,7 @@
     <![endif]-->
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<span id="isadd" style="display:none">{{ .isadd }}</span>
 <div class="wrapper">
     {{template "common/headertitle.tpl" .}}
     <!-- Left side column. contains the logo and sidebar -->
@@ -52,8 +53,16 @@
                 <div class="col-md-12">
                     <div class="nav-tabs-custom">
                         <ul class="nav nav-tabs">
-                            <li class="active"><a href="#basemirr" data-toggle="tab">基础镜像</a></li>
-                            <li><a href="#appmirr" data-toggle="tab">应用镜像</a></li>
+							{{ range .mirgs}}
+								{{ if eq $.mirgid .Id }}
+										<!-- 如果接收到上个页面传过来的类别ID就把该标签设为活动状态 class="active" -->
+										<li class="mirg active" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+								{{else}}
+										<li  class="mirg" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+				
+								{{end}}
+							{{end}}
+                            
                             <li><a href="/mirrgroupadd"><i class="fa fa-plus text-aqua">新增分类</i></a></li>
                         </ul>
                         <div class="tab-content">
@@ -150,7 +159,18 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- /.tab-pane -->
+							
+							
+							{{ range .mirgs}}
+								{{ if eq $.mirgid .Id }}
+										<!-- 如果接收到上个页面传过来的类别ID就把该标签设为活动状态 class="active" -->
+										<li class="mirg active" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+								{{else}}
+										<li  class="mirg" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+				
+								{{end}}
+							{{end}}
+                            <!-- /.tab-pane 每一个镜像类别一个div start -->
                             <div class="tab-pane" id="appmirr">
                                 <!-- The timeline -->
                                 <div class="post">
@@ -160,51 +180,47 @@
                                                 <thead>
                                                 <tr>
                                                     <th>镜像名称</th>
-                                                    <th>基础镜像</th>
+                                                    <!-- <th>基础镜像</th> -->
                                                     <th>仓库地址</th>
 													<th>操作</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr>
-                                                    <td>JDK1.7+TOMCAT7.3.44</td>
-                                                    <td>ubuntu</td>
-                                                    <td>docker.cihi.cn:567/centosphpnginx:latest</td>
-                                                    <td>
-                                                        <a class="btn">
-                                                            <i class="fa fa-edit">编辑</i>
-                                                        </a>
-                                                        <a class="btn">
-                                                            <i class="fa fa-trash">删除</i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>JDK1.7+TOMCAT7.3.44</td>
-                                                    <td>ubuntu</td>
-                                                    <td>docker.cihi.cn:567/centosphpnginx:latest</td>
-                                                    <td>
-                                                        <a class="btn">
-                                                            <i class="fa fa-edit">编辑</i>
-                                                        </a>
-                                                        <a class="btn">
-                                                            <i class="fa fa-trash">删除</i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>nginx</td>
-                                                    <td>ubuntu</td>
-                                                    <td>docker.cihi.cn:567/centosphpnginx:latest1</td>
-                                                    <td>
-                                                        <a class="btn">
-                                                            <i class="fa fa-edit">编辑</i>
-                                                        </a>
-                                                        <a class="btn">
-                                                            <i class="fa fa-trash">删除</i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
+												{{ if .mirs }}
+													{{ range .mirs }}
+														<tr>
+		                                                    <td>{{ .Name }}</td>
+		                                                    <td>{{ .Hubaddress }} </td>
+		                                                    <td>
+																<span class="mir_edit">
+		                                                        <a class="btn">
+		                                                            <i class="fa fa-edit">编辑</i>
+		                                                        </a>
+																</span>
+																<span id="mir_id" style="display:none">{{.Id}}</span>
+																<span class="mir_remove">
+		                                                        <a class="btn">
+		                                                            <i class="fa fa-trash">删除</i>
+		                                                        </a></span>
+		                                                    </td>
+                                                		</tr>
+													{{ end }}
+												
+												{{else}}
+													<tr>
+	                                                    <td>该类别下没有镜像</td>
+	                                                    <td></td>
+	                                                    <td>
+	                                                        <a class="btn">
+	                                                            <i class="fa fa-edit"></i>
+	                                                        </a>
+	                                                        <a class="btn">
+	                                                            <i class="fa fa-trash"></i>
+	                                                        </a>
+	                                                    </td>
+                                                	</tr>
+												{{end}}
+                                                
                                                 </tbody>
                                                 <tfoot>
                                                 <tr>
@@ -219,7 +235,9 @@
                                     </div>
                                 </div>
                                 <!-- /.post -->
-                            </div>                           
+                            </div>    <!-- 每个镜像类别一个div -->
+							
+							                       
                         </div>
                         <!-- /.tab-content -->
                     </div>
@@ -231,24 +249,52 @@
         <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
+	
+	<!-- 确认框 -->
+	<div class="verify-modal">
+        <div class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span id="ver_break" aria-hidden="true">×</span></button>
+                <h4 class="modal-title">Default Modal</h4>
+              </div>
+              <div class="modal-body">
+                <p>One fine body…</p>
+              </div>
+              <div class="modal-footer">
+                <button id="ver_close" type="button" class=" btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button id="ver_save" type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+      </div>
+	<!-- 确认框 end -->
+	
+	
     {{template "common/footitle.tpl" .}}
 </div>
 <!-- ./wrapper -->
 <!-- jQuery 2.2.3 -->
-<script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script src="static/plugins/jQuery/jquery-2.2.3.min.js"></script>
 <!-- Bootstrap 3.3.6 -->
-<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="static/bootstrap/js/bootstrap.min.js"></script>
 <!-- DataTables -->
-<script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<script src="static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="static/plugins/datatables/dataTables.bootstrap.min.js"></script>
 <!-- SlimScroll -->
-<script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<script src="static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <!-- FastClick -->
-<script src="/static/plugins/fastclick/fastclick.js"></script>
+<script src="static/plugins/fastclick/fastclick.js"></script>
 <!-- AdminLTE App -->
-<script src="/static/js/app.min.js"></script>
+<script src="static/js/app.js"></script>
 <!-- AdminLTE for demo purposes -->
-<script src="/static/js/demo.js"></script>
+<script src="static/js/demo.js"></script>
 <!-- page script -->
 <script>
     $(function () {
@@ -256,6 +302,161 @@
         $('#example2').DataTable();
         $('#example3').DataTable();
     });
+	
+	//点击确认对话框执行的函数，可以动态绑定其它事件， abcc=function(){alert("cc")}
+	var abcc = function(){
+		alert("abc");
+	}
+	var mirs  = new Array();
+	//强制刷新类别分组
+	function refreshgroup(){
+		gid = $("li.active").children("span").text();
+		//删除类别数组当前活动mirgid，然后模拟当前镜像类别点击刷新
+		mirs.splice(gid,1)
+		$("li.active").click();
+	}
+	
+	// 点击镜像编辑 动态绑定(普通绑定事件不能用，因为要绑定的元素是动态生成 的。)
+	var edit_status = "true";  //切换完成和编辑状态
+	$(".box-body").on("click","span.mir_edit", function(){
+		//获取镜像id
+		mir_id = $(this).siblings("span#mir_id").text();
+		mir_td1 = $(this).parent().siblings("td:nth-child(1)");
+		mir_td2 = $(this).parent().siblings("td:nth-child(2)");
+		
+		if ( edit_status == "false" ) { //编辑完成，上传到服务器
+			mir_td1text = mir_td1.find("input").attr("placeholder");
+			mir_td2text = mir_td2.find("input").attr("placeholder");
+			mir_td1input = mir_td1.find("input").val();
+			mir_td2input = mir_td2.find("input").val();
+			if (mir_td1input=="" && mir_td2input==""){$(this).children("a").children("i").text("编辑");mir_td1.html(mir_td1text);mir_td2.html(mir_td2text);edit_status="true";return;}
+			if (mir_td1input==""){mir_td1input=mir_td1text}
+			if (mir_td2input==""){mir_td2input=mir_td2text}
+			$.get("jqmirr?mirid=" + mir_id + "&mirname="+ mir_td1input + "&mirhubaddress=" + mir_td2input, function(data,status){
+				alert("status:" +status)
+				if (status == "success"){
+					if (data == "success"){
+						
+						mir_td1.html(mir_td1input)
+						mir_td2.html(mir_td2input)
+						
+					}else {alert("出错了，返回数据data:" + data); return;}
+				}
+			})
+			edit_status="true"
+			$(this).children("a").children("i").text("编辑");
+			return;
+		}
+		
+		
+		input1 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" placeholder=\"" + mir_td1.html() + "\">"
+		$(this).parent().siblings("td:nth-child(1)").html(input1);
+		input2 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" placeholder=\"" + mir_td2.html() + "\">"
+		$(this).parent().siblings("td:nth-child(2)").html(input2);
+		//td1 = $(this).
+		//设置“编辑” ==》 “完成”
+		$(this).children("a").children("i").text("完成");
+		edit_status = "false"
+	});
+	
+	
+	// 点击镜像删除 动态绑定(普通绑定事件不能用，因为要绑定的元素是动态生成 的。)
+	$(".box-body").on("click","span.mir_remove", function(){
+		//获取镜像id
+		mir_id = $(this).siblings("span#mir_id").text();
+		
+		mir_td1 = $(this).parent().siblings("td:nth-child(1)");
+		mir_td1text = mir_td1.find("input").attr("placeholder");
+		if (typeof(mir_td1text) == "undefined"){
+			$(".verify-modal").find(".modal-body").html("确认删除镜像:" + mir_td1.html());
+		} else {
+			$(".verify-modal").find(".modal-body").html("确认删除镜像:" + mir_td1text);
+		}
+		$(".modal").show();
+		$(".verify-modal").find(".modal-title").html("你好")
+		abcc = function (){
+			$.get("/jqrmmir?mirid=" + mir_id, function(data, status){
+				if (status == "success"){
+					if (data == "success"){
+						$("#ver_close").click();
+						refreshgroup();
+						return;
+					}else {
+						$(".verify-modal").find(".modal-title").html("警告")
+						$(".verify-modal").find(".modal-body").html("服务器出错,返回数据data:" + data);
+						abcc = function(){
+							$("#ver_close").click();
+						}
+					}
+				}else {
+					alert("aaaaaaaaaa")
+					$(".verify-modal").find(".modal-title").html("警告")
+					$(".verify-modal").find(".modal-body").html("网络问题,statuscode:" + status);
+					abcc = function(){
+						$("#ver_close").click();
+					}
+				}
+			})
+		}
+	});
+
+	
+	$(document).ready(function(){
+		
+		
+		//页面加载完成执行的事件：把显示基础镜像的百分比DIV隐藏并且把镜像列表DIV显示
+		if ($("#isadd").text()=="true" ){
+			$("#basemirr").hide();
+			$("#appmirr").show();
+		}
+
+		//点击镜像类别事件
+
+		var mirgid;
+		$(".mirg").click(function(){
+			//alert("asdfasdf")
+			edit_status="true" //每点击一次就要把编辑状态还原
+			
+			//获取子元素SPAN隐藏的ID,去动态获取类别镜像 
+			mirgid = Number($(this).children("span").text());
+			if ( typeof(mirs[mirgid]) == "undefined"){
+				$.get("jqmirrlist?mirgid=" + mirgid,function(data,status){
+					$('#example1 tbody').html("");
+					$.each(data,function(i,event){
+						$('#example1 tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
+						event.Hubaddress + " </td><td><span  class=\"mir_edit\"><a class=\"btn\"><i class=\"fa fa-edit\">编辑</i></a></span><span id=\"mir_id\" style=\"display:none\">" +
+						 event.Id + "</span><span  class=\"mir_remove\"><a class=\"btn\"><i class=\"fa fa-trash\">删除</i></a></span></td></tr>");
+						
+					})
+					mirs[mirgid] = data;
+				});
+				
+			} else {
+				$('#example1 tbody').html("");
+				$.each(mirs[mirgid],function(i,event){
+					$('#example1 tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
+					event.Hubaddress + " </td><td><span class=\"mir_edit\" ><a class=\"btn\"><i class=\"fa fa-edit\">编辑</i></a></span><span id=\"mir_id\" style=\"display:none\">" +
+					 event.Id + "</span ><span  class=\"mir_remove\"><a class=\"btn\"><i class=\"fa fa-trash\">删除</i></a></span></td></tr>");
+					
+				});
+				
+			}	
+		});// end //点击镜像类别事件
+		
+		//确认框close事件
+		$("#ver_close").click(function(){
+			$(".modal").hide();
+		})
+		$("#ver_break").click(function(){
+			$(".modal").hide();
+		})
+				
+		$("#ver_save").click(function(){
+			abcc();
+		})
+		
+		
+	})
 </script>
 </body>
 </html>
