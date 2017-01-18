@@ -1,0 +1,58 @@
+package routers
+
+import (
+	"lvbu/controllers"
+	"lvbu/controllers/config"
+	"lvbu/controllers/env"
+	"lvbu/controllers/machine"
+	"lvbu/controllers/mirror"
+	"lvbu/controllers/node"
+	"lvbu/controllers/project"
+	"lvbu/controllers/record"
+	"lvbu/controllers/sys"
+	"lvbu/controllers/user"
+
+	"github.com/astaxie/beego"
+)
+
+func init() {
+	beego.Router("/", &controllers.MainController{})
+	//用户
+	beego.Router("/login", &user.UserLoginController{}, "get:Get;post:Post")
+	beego.Router("/index", &user.UserController{}, "*:Index")
+	beego.Router("/profile", &user.UserController{}, "*:Profile")
+	beego.Router("/headimg", &user.UserController{}, "*:Headimg")
+	beego.Router("/logout", &user.UserController{}, "*:Logout")
+	beego.Router("/Lock/:id([0-9]+)", &user.UserController{}, "*:Lock")
+	beego.Router("/Unlock/:id([0-9]+)", &user.UserController{}, "*:Unlock")
+	//项目
+	beego.Router("/prolist", &project.ProController{}, "*:List")
+	beego.Router("/prodit", &project.ProController{}, "*:Edit")
+	beego.Router("/proadd", &project.ProController{}, "*:Add")
+	//节点
+	beego.Router("/nodelist", &node.NodeController{}, "*:List")
+	beego.Router("/nodedit", &node.NodeController{}, "*:Edit")
+	beego.Router("/nodeadd", &node.NodeController{}, "*:Add")
+	//主机
+	beego.Router("/maclist", &machine.MacController{}, "*:List")
+	beego.Router("/macedit/:id([0-9]+)", &machine.MacController{}, "*:Edit")
+	beego.Router("/macadd", &machine.MacController{}, "*:Add")
+	//镜像
+	beego.Router("/mirrlist", &mirror.MirController{}, "*:List")
+	beego.Router("/mirredit", &mirror.MirController{}, "*:Edit")
+	beego.Router("/mirradd", &mirror.MirController{}, "*:Add")
+	beego.Router("/mirrgroupadd", &mirror.MirController{}, "get:Gadd;post:Post")
+	//环境
+	beego.Router("/env", &env.EnvController{}, "*:List")
+	//系统
+	beego.Router("/usermanager", &sys.UserController{}, "*:List")
+	beego.Router("/useradd", &sys.UserController{}, "*:Add")
+	beego.Router("/useredit", &sys.UserController{}, "*:Edit")
+	beego.Router("/permanage/:id([0-9]+)", &sys.PerController{}, "Get:List;post:Post")
+	beego.Router("/poslist", &sys.PosController{}, "*:List")
+	beego.Router("/about", &sys.SysController{}, "*:About")
+	//记录
+	beego.Router("/reclist", &record.RecController{}, "*:List")
+	//配置
+	beego.Router("/conlist", &config.ConController{}, "*:List")
+}
