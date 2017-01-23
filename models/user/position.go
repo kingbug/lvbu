@@ -51,3 +51,12 @@ func (m *Position) Delete() error {
 func (m *Position) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
 }
+
+func Getposition() []*Position {
+	var posis []*Position
+	_, err := new(Position).Query().All(&posis, "Id", "Name")
+	if err != nil {
+		beego.Error("查询数据库出错:" + err.Error())
+	}
+	return posis
+}

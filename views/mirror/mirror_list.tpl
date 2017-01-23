@@ -25,6 +25,7 @@
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <span id="isadd" style="display:none">{{ .isadd }}</span>
+<span id="isaddgid" style="display:none">{{.mirgid}}</span>
 <div class="wrapper">
     {{template "common/headertitle.tpl" .}}
     <!-- Left side column. contains the logo and sidebar -->
@@ -164,78 +165,110 @@
 							{{ range .mirgs}}
 								{{ if eq $.mirgid .Id }}
 										<!-- 如果接收到上个页面传过来的类别ID就把该标签设为活动状态 class="active" -->
-										<li class="mirg active" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+										<!-- /.tab-pane 每一个镜像类别一个div start -->
+		                            <div class="tab-pane" id="appmirr{{ .Id }}">
+		                                <!-- The timeline -->
+		                                <div class="post">
+		                                    <div class="box">                                        
+		                                        <div class="box-body">
+													<table id="example{{.Id}}" class="table table-bordered table-hover">
+		                                                <thead>
+		                                                <tr>
+		                                                    <th>镜像名称</th>
+		                                                    <!-- <th>基础镜像</th> -->
+		                                                    <th>仓库地址</th>
+															<th>操作</th>
+		                                                </tr>
+		                                                </thead>
+		                                                <tbody>
+														{{ if $.mirs }}
+															{{ range $.mirs }}
+																<tr>
+				                                                    <td>{{ .Name }}</td>
+				                                                    <td>{{ .Hubaddress }} </td>
+				                                                    <td>
+																		<span class="mir_edit">
+				                                                        <a class="btn">
+				                                                            <i class="fa fa-edit">编辑</i>
+				                                                        </a>
+																		</span>
+																		<span id="mir_id" style="display:none">{{.Id}}</span>
+																		<span class="mir_remove">
+				                                                        <a class="btn">
+				                                                            <i class="fa fa-trash">删除</i>
+				                                                        </a></span>
+				                                                    </td>
+		                                                		</tr>
+															{{ end }}
+														
+														{{else}}
+															<tr>
+			                                                    <td>该类别下没有镜像</td>
+			                                                    <td></td>
+			                                                    <td>
+			                                                        <a class="btn">
+			                                                            <i class="fa fa-edit"></i>
+			                                                        </a>
+			                                                        <a class="btn">
+			                                                            <i class="fa fa-trash"></i>
+			                                                        </a>
+			                                                    </td>
+		                                                	</tr>
+														{{end}}
+		                                                
+		                                                </tbody>
+		                                                <tfoot>
+		                                                <tr>
+		                                                    <th>镜像名称</th>
+		                                                    <th>基础镜像</th>
+		                                                    <th>仓库地址</th>
+		                                                </tr>
+		                                                </tfoot>
+		                                            </table>
+		                                        </div>
+		                                        <!-- /.box-body -->
+		                                    </div>
+		                                </div>
+		                                <!-- /.post -->
+		                            </div>    <!-- 每个镜像类别一个div -->
 								{{else}}
-										<li  class="mirg" ><a href="#appmirr" data-toggle="tab">{{ .Name }}</a><span class="mirg_id" style="display:none">{{ .Id }}</span></li>
+										<!-- /.tab-pane 每一个镜像类别一个div start -->
+		                            <div class="tab-pane" id="appmirr{{.Id}}">
+		                                <!-- The timeline -->
+		                                <div class="post">
+		                                    <div class="box">                                        
+		                                        <div class="box-body">
+													<table id="example{{.Id}}" class="table table-bordered table-hover">
+		                                                <thead>
+		                                                <tr>
+		                                                    <th>镜像名称</th>
+		                                                    <!-- <th>基础镜像</th> -->
+		                                                    <th>仓库地址</th>
+															<th>操作</th>
+		                                                </tr>
+		                                                </thead>
+		                                                <tbody>
+														
+		                                                
+		                                                </tbody>
+		                                                <tfoot>
+		                                                <tr>
+		                                                    <th>镜像名称</th>
+		                                                    <th>基础镜像</th>
+		                                                    <th>仓库地址</th>
+		                                                </tr>
+		                                                </tfoot>
+		                                            </table>
+		                                        </div>
+		                                        <!-- /.box-body -->
+		                                    </div>
+		                                </div>
+		                                <!-- /.post -->
+		                            </div>    <!-- 每个镜像类别一个div -->
 				
 								{{end}}
 							{{end}}
-                            <!-- /.tab-pane 每一个镜像类别一个div start -->
-                            <div class="tab-pane" id="appmirr">
-                                <!-- The timeline -->
-                                <div class="post">
-                                    <div class="box">                                        
-                                        <div class="box-body">
-											<table id="example1" class="table table-bordered table-hover">
-                                                <thead>
-                                                <tr>
-                                                    <th>镜像名称</th>
-                                                    <!-- <th>基础镜像</th> -->
-                                                    <th>仓库地址</th>
-													<th>操作</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-												{{ if .mirs }}
-													{{ range .mirs }}
-														<tr>
-		                                                    <td>{{ .Name }}</td>
-		                                                    <td>{{ .Hubaddress }} </td>
-		                                                    <td>
-																<span class="mir_edit">
-		                                                        <a class="btn">
-		                                                            <i class="fa fa-edit">编辑</i>
-		                                                        </a>
-																</span>
-																<span id="mir_id" style="display:none">{{.Id}}</span>
-																<span class="mir_remove">
-		                                                        <a class="btn">
-		                                                            <i class="fa fa-trash">删除</i>
-		                                                        </a></span>
-		                                                    </td>
-                                                		</tr>
-													{{ end }}
-												
-												{{else}}
-													<tr>
-	                                                    <td>该类别下没有镜像</td>
-	                                                    <td></td>
-	                                                    <td>
-	                                                        <a class="btn">
-	                                                            <i class="fa fa-edit"></i>
-	                                                        </a>
-	                                                        <a class="btn">
-	                                                            <i class="fa fa-trash"></i>
-	                                                        </a>
-	                                                    </td>
-                                                	</tr>
-												{{end}}
-                                                
-                                                </tbody>
-                                                <tfoot>
-                                                <tr>
-                                                    <th>镜像名称</th>
-                                                    <th>基础镜像</th>
-                                                    <th>仓库地址</th>
-                                                </tr>
-                                                </tfoot>
-                                            </table>
-                                        </div>
-                                        <!-- /.box-body -->
-                                    </div>
-                                </div>
-                                <!-- /.post -->
-                            </div>    <!-- 每个镜像类别一个div -->
+                            
 							
 							                       
                         </div>
@@ -296,12 +329,12 @@
 <!-- AdminLTE for demo purposes -->
 <script src="static/js/demo.js"></script>
 <!-- page script -->
-<script>
-    $(function () {
-        $('#example1').DataTable();
-        $('#example2').DataTable();
-        $('#example3').DataTable();
-    });
+<script type="text/javascript">
+ //   $(function () {
+   //     $('#example1').DataTable();
+     //   $('#example2').DataTable();
+       // $('#example3').DataTable();
+    //});
 	
 	//点击确认对话框执行的函数，可以动态绑定其它事件， abcc=function(){alert("cc")}
 	var abcc = function(){
@@ -310,7 +343,8 @@
 	var mirs  = new Array();
 	//强制刷新类别分组
 	function refreshgroup(){
-		gid = $("li.active").children("span").text();
+		gid = $("li.active.mirg").children("span").text();
+		//$("#example" + gid).dataTable().fnDraw()
 		//删除类别数组当前活动mirgid，然后模拟当前镜像类别点击刷新
 		mirs.splice(gid,1)
 		$("li.active").click();
@@ -406,12 +440,16 @@
 		
 		//页面加载完成执行的事件：把显示基础镜像的百分比DIV隐藏并且把镜像列表DIV显示
 		if ($("#isadd").text()=="true" ){
-			$("#basemirr").hide();
-			$("#appmirr").show();
+			gid = $("#isaddgid").text();
+			$('#example' + gid).DataTable();
+			mirs[gid] = ""
+			$(".tab-content .tab-pane").removeClass("active");
+			$("#appmirr"+ gid).addClass("active");
+			//$("#basemirr").hide();
+			//$("#appmirr").show();
 		}
 
 		//点击镜像类别事件
-
 		var mirgid;
 		$(".mirg").click(function(){
 			//alert("asdfasdf")
@@ -419,26 +457,30 @@
 			
 			//获取子元素SPAN隐藏的ID,去动态获取类别镜像 
 			mirgid = Number($(this).children("span").text());
+			$(".tab-content .tab-pane").removeClass("active");
+			$("#appmirr"+ mirgid).addClass("active");
 			if ( typeof(mirs[mirgid]) == "undefined"){
 				$.get("jqmirrlist?mirgid=" + mirgid,function(data,status){
-					$('#example1 tbody').html("");
+					$('#example' + mirgid + ' tbody').html("");
 					$.each(data,function(i,event){
-						$('#example1 tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
+						$('#example' + mirgid + ' tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
 						event.Hubaddress + " </td><td><span  class=\"mir_edit\"><a class=\"btn\"><i class=\"fa fa-edit\">编辑</i></a></span><span id=\"mir_id\" style=\"display:none\">" +
 						 event.Id + "</span><span  class=\"mir_remove\"><a class=\"btn\"><i class=\"fa fa-trash\">删除</i></a></span></td></tr>");
 						
 					})
 					mirs[mirgid] = data;
+					$('#example'+ mirgid).DataTable();
 				});
 				
 			} else {
-				$('#example1 tbody').html("");
+				/*$('#example1 tbody').html("");
 				$.each(mirs[mirgid],function(i,event){
-					$('#example1 tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
+					$('#example'+ mirgid + ' tbody').append("<tr><td> "+ event.Name +" </td><td> " + 
 					event.Hubaddress + " </td><td><span class=\"mir_edit\" ><a class=\"btn\"><i class=\"fa fa-edit\">编辑</i></a></span><span id=\"mir_id\" style=\"display:none\">" +
 					 event.Id + "</span ><span  class=\"mir_remove\"><a class=\"btn\"><i class=\"fa fa-trash\">删除</i></a></span></td></tr>");
 					
 				});
+				alert("aaa")*/
 				
 			}	
 		});// end //点击镜像类别事件

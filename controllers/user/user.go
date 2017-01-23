@@ -5,6 +5,8 @@ import (
 	ctl "lvbu/controllers"
 	muser "lvbu/models/user"
 	"lvbu/utils"
+	"math/rand"
+	"time"
 
 	"github.com/astaxie/beego"
 )
@@ -56,14 +58,51 @@ func (c *UserController) Lock() {
 	tmp, _ := c.GetUint16(":id")
 	user.Id = uint(tmp)
 	user.Status = 1
-	user.Update("Status")
-	c.Redirect("/usermanager", 302)
+
+	num := rand.Int31n(10)
+	time.Sleep(time.Duration(num) * time.Second)
+	if err := user.Update("Status"); err != nil {
+		c.Data["json"] = err.Error()
+		c.ServeJSON()
+		return
+	} else {
+		c.Data["json"] = "lock"
+		c.ServeJSON()
+		return
+	}
+
 }
 func (c *UserController) Unlock() {
 	var user muser.User
 	tmp, _ := c.GetUint16(":id")
 	user.Id = uint(tmp)
 	user.Status = 0
-	user.Update("Status")
-	c.Redirect("/usermanager", 302)
+	num := rand.Int31n(10)
+	time.Sleep(time.Duration(num) * time.Second)
+	if err := user.Update("Status"); err != nil {
+		c.Data["json"] = err.Error()
+		c.ServeJSON()
+		return
+	} else {
+		c.Data["json"] = "unlock"
+		c.ServeJSON()
+		return
+	}
+}
+
+func (c *UserController) Jqrmuser() {
+	userid, _ := c.GetInt("userid")
+	beego.Debug("删除用户Id:", userid)
+	var user muser.User
+	user.Id = uint(userid)
+	if err := user.Delete(); err != nil {
+		c.Data["json"] = err.Error()
+		c.ServeJSON()
+		return
+	} else {
+		c.Data["json"] = "success"
+		c.ServeJSON()
+		return
+	}
+
 }

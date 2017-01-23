@@ -64,6 +64,7 @@ func (m *User) Clscache() error {
 	utils.DelCache("user.id." + fmt.Sprintf("%d", m.Id))
 	return nil
 }
+
 func Getuser(id uint) User {
 	var user User
 	err := utils.GetCache("user.id."+fmt.Sprintf("%d", id), &user)

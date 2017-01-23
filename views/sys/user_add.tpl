@@ -24,6 +24,17 @@
     <![endif]-->
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<span id="checkedenvs" style="display:none;">
+{{if .user.Permission}}
+	{{range $v := Getenvidlist .user.Permission}}
+		<label>
+	        <input type="checkbox"  class="minimal" name="copypermission" value="{{$v}}" checked="checked">{{$v}}
+	    </label>
+	{{end}}
+{{end}}
+
+	
+</span>
 <div class="wrapper">
     {{template "common/headertitle.tpl" .}}
     <!-- Left side column. contains the logo and sidebar -->
@@ -46,66 +57,197 @@
                 <div class="col-md-12">
                     <div class="box">                       
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" action="" method="post">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">用户名</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="用于登录系统">
-                                    </div>
+									{{if .user.UserName}}
+										<div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="username" placeholder="" value="{{.user.UserName}}">
+	                                    </div>
+									{{else}}
+										<div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="username" placeholder="用于登录系统">
+	                                    </div>
+									{{end}}
+									{{if .usernameerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.usernameerr}}</small>
+										</label>
+									{{end}}
+                                    
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">密码</label>
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="密码">
-                                    </div>
+									{{if .user.Passwd}}
+										<div class="col-sm-10">
+	                                        <input type="password" class="form-control" id="inputName" name="passwd" placeholder="" value="{{.user.Passwd}}">
+	                                    </div>
+									{{else}}
+										<div class="col-sm-10">
+	                                        <input type="password" class="form-control" id="inputName" name="passwd" placeholder="密码">
+	                                    </div>
+									{{end}}
+									{{if .passwderr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.passwderr}}</small>
+										</label>
+									{{end}}
+ 
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">姓名</label>
+									
+									{{if .user.Nick}}
+										<div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="nick" placeholder="" value="{{.user.Nick}}">
+	                                    </div>
+									{{else}}
+	                                    <div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="nick" placeholder="姓名">
+	                                    </div>
+									{{end}}
+									{{if .nickerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.nickerr}}</small>
+										</label>
+									{{end}}
+									
+                                </div>
+								<div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">性别</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="姓名">
+										{{ if .user.Sex}}
+											{{if eq .usersex 1}}
+												<label>
+													<input type="radio" name="sex" class="minimal" value="1" checked="checked">男
+												</label>
+												<label style="margin-left:100px;">
+													<input type="radio" name="sex" class="minimal" value="0">女
+												</label>
+											{{else}}
+												<label>
+													<input type="radio" name="sex" class="minimal" value="1" >男
+												</label>
+												<label style="margin-left:100px;">
+													<input type="radio" name="sex" class="minimal" value="0" checked="checked">女
+												</label>
+											{{end}}
+											
+										{{else}}
+									
+	                                      	<label>
+												<input type="radio" name="sex" class="minimal" value="1" checked="checked">男
+											</label>
+										
+											<label style="margin-left:100px;">
+												<input type="radio" name="sex" class="minimal" value="0">女
+											</label>
+										{{end}}
+										{{if .sexerr}}
+											<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.sexerr}}</small>
+											</label>
+										{{end}}
+
                                     </div>
                                 </div>
 								<div class="form-group">								
-                                    <label for="inputName" class="col-sm-2 control-label">电话</label>									
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="电话">
-                                    </div>
+                                    <label for="inputName" class="col-sm-2 control-label">电话</label>
+									{{if .user.Phone}}
+										<div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="phone" placeholder="" value="{{.user.Phone}}">
+	                                    </div>
+									{{else}}
+										<div class="col-sm-10">
+	                                        <input type="text" class="form-control" id="inputName" name="phone" placeholder="电话">
+	                                    </div>
+									{{end}}
+									{{if .phoneerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.phoneerr}}</small>
+										</label>
+									{{end}}									
+                                   
                                 </div>
 								<div class="form-group">								
-                                    <label for="inputName" class="col-sm-2 control-label">邮箱</label>									
-                                    <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="邮箱">
-                                    </div>
+                                    <label for="inputName" class="col-sm-2 control-label">邮箱</label>	
+									{{if .user.Email}}
+										<div class="col-sm-10">
+	                                        <input type="email" class="form-control" id="inputName" name="email" placeholder="" value="{{.user.Email}}">
+	                                    </div>
+									{{else}}
+										<div class="col-sm-10">
+	                                        <input type="email" class="form-control" id="inputName" name="email" placeholder="邮箱">
+	                                    </div>
+									{{end}}
+									{{if .emailerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.emailerr}}</small>
+										</label>
+									{{end}}											
+                                   
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">职位</label>
                                     <div class="col-sm-10">
-                                        <select class="form-control select2" style="width: 100%;">
-                                            <option selected="selected">运维经理</option>
-                                            <option>项目经理</option>
-                                            <option>测试工程师</option>
-											<option>开发工程师</option>
-											<option>运维工程师</option>
+                                        <select class="form-control select2" name="position" style="width: 100%;">
+											{{if .user.Position}}
+												<option value="0">选择职能↓↓↓</option>
+											{{else}}
+												<option selected="selected" value="0">选择职能↓↓↓</option>
+											{{end}}
+											{{ range Getposition }}
+												{{if $.user.Position}}
+													{{if eq .Id $.user.Position.Id}}
+														<option selected="selected" value="{{.Id}}">{{.Name}}</option>
+													{{else}}
+														<option value="{{.Id}}">{{.Name}}</option>
+													{{end}}
+												{{else}}
+													<option value="{{.Id}}">{{.Name}}</option>
+												{{end}}
+											{{end}}
                                         </select>
                                     </div>
+									{{if .positionerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.positionerr}}</small>
+										</label>
+									{{end}}
                                 </div> 
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">环境权限</label>
-                                    <div class="col-sm-10">                                       
-                                            <label>
-                                                <input type="checkbox"  class="minimal">开发环境
+                                    <div class="col-sm-10">  
+										{{ range Getenv}}
+											<label>
+                                                <input type="checkbox"  class="minimal" name="permission" value="{{.Id}}">{{.Name}}
+                                            </label>
+										{{end}}  
+										{{if .enverr}}
+											<lable style="margin-left:10%;">
+													<small class="label label-danger"> {{.enverr}}</small>
+											</label>
+										{{end}}		                                   
+                                           <!-- <label>
+                                                <input type="checkbox"  class="minimal"  checked="checked">开发环境
                                             </label>
                                             <label>
                                                 <input type="checkbox"  class="minimal">测试环境
                                             </label>  
 											<label>
                                                 <input type="checkbox"  class="minimal">运维环境
-                                            </label>                                      
+                                            </label>     -->                                  
                                     </div>
                                 </div>           
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-10">
                                         <button type="submit" class="btn btn-danger">Submit</button>
+										{{if .message}}
+											<div class="form-group has-error">
+							                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i> {{.message}}</label>
+							                 
+							                </div>
+										{{end}}
                                     </div>
                                 </div>
                             </form>
@@ -139,5 +281,11 @@
 <script src="/static/js/app.min.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="/static/js/demo.js"></script>
+
+<script>
+$("#checkedenvs input[name='copypermission']:checked").each(function(){
+		$("[name='permission'][value=" + $(this).val() + "]").attr("checked",'true');
+	})
+</script>
 </body>
 </html>

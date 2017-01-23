@@ -23,8 +23,10 @@ func init() {
 	beego.Router("/profile", &user.UserController{}, "*:Profile")
 	beego.Router("/headimg", &user.UserController{}, "*:Headimg")
 	beego.Router("/logout", &user.UserController{}, "*:Logout")
-	beego.Router("/Lock/:id([0-9]+)", &user.UserController{}, "*:Lock")
-	beego.Router("/Unlock/:id([0-9]+)", &user.UserController{}, "*:Unlock")
+	beego.Router("/lockuser/:id([0-9]+)", &user.UserController{}, "*:Lock")
+	beego.Router("/unlockuser/:id([0-9]+)", &user.UserController{}, "*:Unlock")
+	beego.Router("/jqrmuser", &user.UserController{}, "*:Jqrmuser")
+
 	//项目
 	beego.Router("/prolist", &project.ProController{}, "*:List")
 	beego.Router("/prodit", &project.ProController{}, "*:Edit")
@@ -49,8 +51,8 @@ func init() {
 	beego.Router("/env", &env.EnvController{}, "*:List")
 	//系统
 	beego.Router("/usermanager", &sys.UserController{}, "*:List")
-	beego.Router("/useradd", &sys.UserController{}, "*:Add")
-	beego.Router("/useredit", &sys.UserController{}, "*:Edit")
+	beego.Router("/useradd", &sys.UserController{}, "get:AddGet;post:AddPost")
+	beego.Router("/useredit/:id([0-9]+)", &sys.UserController{}, "get:EditGet;post:EditPost")
 	beego.Router("/permanage/:id([0-9]+)", &sys.PerController{}, "Get:List;post:Post")
 	beego.Router("/poslist", &sys.PosController{}, "*:List")
 	beego.Router("/about", &sys.SysController{}, "*:About")
@@ -58,4 +60,9 @@ func init() {
 	beego.Router("/reclist", &record.RecController{}, "*:List")
 	//配置
 	beego.Router("/conlist", &config.ConController{}, "*:List")
+
+	//职位
+	beego.Router("/jqaddpos", &sys.PosController{}, "*:Jqaddpos")
+	beego.Router("/jqupdatepos", &sys.PosController{}, "*:Jqupdatepos")
+	beego.Router("/jqrmpos/:id([0-9]+)", &sys.PosController{}, "*:Jqrmpos")
 }
