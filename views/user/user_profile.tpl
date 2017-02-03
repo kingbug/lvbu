@@ -46,30 +46,35 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="box">
+						{{if .message}}
+							<lable style="margin-left:18%;">
+								<small class="label label-success"> {{.message}}</small>
+							</label>
+						{{end}}
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" method="post" action="">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">帐号</label>
                                     <div class="col-sm-10">
-                                        <label>liningjiang</label>
+                                        <label>{{.user.UserName}}</label>
                                     </div>
                                 </div> 
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">姓名</label>
                                     <div class="col-sm-10">
-                                        <label>李泞江</label>
+                                        <label>{{.user.Nick}}</label>
                                     </div>
                                 </div>                                
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">邮箱</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="邮箱地址">
+                                        <input type="text" class="form-control" id="inputName" name="email" placeholder="{{.user.Email}}">
                                     </div>
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">手机</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="手机号码">
+                                        <input type="text" class="form-control" id="inputName" name="phone" placeholder="{{.user.Phone}}">
                                     </div>
                                 </div>
 								<div class="form-group">
@@ -81,7 +86,7 @@
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">新密码确认</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="新密码确认">
+                                        <input type="text" class="form-control" id="inputName" name="password" placeholder="新密码确认">
                                     </div>
                                 </div>
                                 <div class="form-group">

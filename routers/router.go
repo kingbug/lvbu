@@ -20,7 +20,7 @@ func init() {
 	//用户
 	beego.Router("/login", &user.UserLoginController{}, "get:Get;post:Post")
 	beego.Router("/index", &user.UserController{}, "*:Index")
-	beego.Router("/profile", &user.UserController{}, "*:Profile")
+	beego.Router("/profile", &user.UserController{}, "get:Profile;post:ProfilePost")
 	beego.Router("/headimg", &user.UserController{}, "*:Headimg")
 	beego.Router("/logout", &user.UserController{}, "*:Logout")
 	beego.Router("/lockuser/:id([0-9]+)", &user.UserController{}, "*:Lock")
@@ -55,14 +55,14 @@ func init() {
 	beego.Router("/useredit/:id([0-9]+)", &sys.UserController{}, "get:EditGet;post:EditPost")
 	beego.Router("/permanage/:id([0-9]+)", &sys.PerController{}, "Get:List;post:Post")
 	beego.Router("/poslist", &sys.PosController{}, "*:List")
+	//职位
+	beego.Router("/jqaddpos", &sys.PosController{}, "*:Jqaddpos")
+	beego.Router("/jqupdatepos", &sys.PosController{}, "*:Jqupdatepos")
+	beego.Router("/jqrmpos/:id([0-9]+)", &sys.PosController{}, "*:Jqrmpos")
 	beego.Router("/about", &sys.SysController{}, "*:About")
 	//记录
 	beego.Router("/reclist", &record.RecController{}, "*:List")
 	//配置
 	beego.Router("/conlist", &config.ConController{}, "*:List")
 
-	//职位
-	beego.Router("/jqaddpos", &sys.PosController{}, "*:Jqaddpos")
-	beego.Router("/jqupdatepos", &sys.PosController{}, "*:Jqupdatepos")
-	beego.Router("/jqrmpos/:id([0-9]+)", &sys.PosController{}, "*:Jqrmpos")
 }

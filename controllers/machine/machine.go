@@ -12,6 +12,7 @@ type MacController struct {
 
 func (c *MacController) Add() {
 	c.Data["uid"] = c.GetSession("uid")
+	c.SessionRegenerateID()
 	c.TplName = "machine/machine_add.tpl"
 }
 func (c *MacController) Edit() {
