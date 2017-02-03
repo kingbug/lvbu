@@ -52,7 +52,7 @@
 							</label>
 						{{end}}
                         <div class="box-body">
-                            <form class="form-horizontal" method="post" action="">
+                            <form class="form-horizontal" method="post" action="" onsubmit="return toVaild()">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">帐号</label>
                                     <div class="col-sm-10">
@@ -80,13 +80,13 @@
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">新密码</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="新密码">
+                                        <input type="text" class="form-control" id="password" placeholder="新密码">
                                     </div>
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">新密码确认</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" name="password" placeholder="新密码确认">
+                                        <input type="text" class="form-control" id="re_password" name="password" placeholder="新密码确认">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -131,6 +131,19 @@
         //Initialize Select2 Elements
         $(".select2").select2();
     });
+	
+	function toVaild() {
+		var password = $("form #password").val();
+		var re_password = $("form #re_password").val();
+		if (password == re_password){
+			return true;
+		}
+
+		
+		alert("两次输入密码不一样");
+		return false
+	}
+	
 </script>
 </body>
 </html>
