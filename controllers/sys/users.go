@@ -4,6 +4,7 @@ import (
 	"fmt"
 	ctl "lvbu/controllers"
 	men "lvbu/models/env"
+	mper "lvbu/models/permission"
 	muser "lvbu/models/user"
 	"lvbu/utils"
 	"strconv"
@@ -21,7 +22,13 @@ func (c *UserController) AddGet() {
 
 }
 func (c *UserController) AddPost() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求添加用户,权限验证失败")
+		c.Abort("503")
+	}
 	var message string
 	con := true
 	var user muser.User
@@ -116,8 +123,13 @@ func (c *UserController) AddPost() {
 
 }
 func (c *UserController) EditGet() {
-	c.Data["uid"] = c.GetSession("uid")
-	//前面 一定要验证权限
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求修改用户,权限验证失败")
+		c.Abort("503")
+	}
 	id, _ := c.GetInt(":id")
 	var user muser.User
 	user.Id = uint(id)
@@ -131,9 +143,15 @@ func (c *UserController) EditGet() {
 	c.TplName = "sys/user_edit.tpl"
 }
 func (c *UserController) EditPost() {
-	c.Data["uid"] = c.GetSession("uid")
-	//前面 一定要验证权限
-	uid, _ := c.GetInt(":id")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:修改用户POST,权限验证失败")
+		c.Abort("503")
+	}
+	uuid, _ := c.GetInt(":id")
+	uid = uint(uuid)
 	var message string
 	con := true
 	var user muser.User
@@ -216,7 +234,7 @@ func (c *UserController) EditPost() {
 	}
 	beego.Debug(user.Permission)
 	var copyuser muser.User
-	copyuser.Id = uint(uid)
+	copyuser.Id = uid
 	copyuser.Read()
 	c.Data["user"] = &copyuser
 	if con != true {
@@ -225,7 +243,7 @@ func (c *UserController) EditPost() {
 		c.TplName = "sys/user_edit.tpl"
 	} else {
 		user.Passwd = utils.Md5(user.Passwd)
-		user.Id = uint(uid)
+		user.Id = uid
 		user.Created = copyuser.Created
 		err = user.Update()
 		if err != nil {
@@ -240,7 +258,13 @@ func (c *UserController) EditPost() {
 }
 
 func (c *UserController) List() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求用户列表,权限验证失败")
+		c.Abort("503")
+	}
 	var user []muser.User
 	var postions []muser.Position
 	new(muser.User).Query().All(&user)

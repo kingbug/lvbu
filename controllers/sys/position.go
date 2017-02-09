@@ -2,6 +2,7 @@ package sys
 
 import (
 	ctl "lvbu/controllers"
+	mper "lvbu/models/permission"
 	muser "lvbu/models/user"
 
 	"github.com/astaxie/beego"
@@ -12,20 +13,33 @@ type PosController struct {
 }
 
 func (c *PosController) List() {
-	c.Data["uid"] = c.GetSession("uid")
-	c.TplName = "sys/sys_about.tpl"
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理(OS)，可以 添加，修改职位资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求职位列表,权限验证失败")
+		c.Abort("503") //因是JS请求并不会跳转，但也不会往下执行
+	}
+	c.TplName = "user/user_index.tpl"
 }
 
 func (c *PosController) Jqupdatepos() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理(OS)，可以 添加，修改职位资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求修改职位,权限验证失败")
+		c.Abort("503") //因是JS请求并不会跳转，但也不会往下执行
+	}
 	posid, err := c.GetInt("posid")
 	if err == nil {
 		var pos muser.Position
-		beego.Debug("jq请求修改镜像Id:", posid)
+		beego.Debug("jq请求修改职位Id:", posid)
 		pos.Id = uint(posid)
 		err = pos.Read()
 		//err := mirs.Query().Filter("Id", mirid).One(&mirs)
 		if err != nil {
-			beego.Error("查询镜像时出错:", err.Error())
+			beego.Error("查询职位时出错:", err.Error())
 			c.Data["json"] = "多人操作中，该条信息已删除，请刷新当前页面，已获取最新:" + err.Error()
 			c.ServeJSON()
 			return
@@ -50,6 +64,13 @@ func (c *PosController) Jqupdatepos() {
 }
 
 func (c *PosController) Jqrmpos() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理(OS)，可以 添加，修改职位资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求删除职位,权限验证失败")
+		c.Abort("503") //因是JS请求并不会跳转，但也不会往下执行
+	}
 	posid, err := c.GetInt(":id")
 	if err == nil {
 		var pos muser.Position
@@ -72,6 +93,13 @@ func (c *PosController) Jqrmpos() {
 }
 
 func (c *PosController) Jqaddpos() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理(OS)，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求添加职位,权限验证失败")
+		c.Abort("503") //因是JS请求并不会跳转，但也不会往下执行
+	}
 	name := c.GetString("name")
 	sign := c.GetString("sign")
 

@@ -3,6 +3,7 @@ package user
 import (
 	//"fmt"
 	ctl "lvbu/controllers"
+	mper "lvbu/models/permission"
 	muser "lvbu/models/user"
 	"lvbu/utils"
 
@@ -37,6 +38,9 @@ func (c *UserLoginController) Post() {
 	user.Read("UserName")
 	if user.Passwd == utils.Md5(passwd) {
 		c.SetSession("uid", user.Id)
+		if c.GetString("redirect") != "" { //登陆成功跳转登陆前页面
+			c.Redirect(c.GetString("redirect"), 302)
+		}
 		c.Redirect("/index", 302)
 	} else {
 		c.Data["message"] = "帐号或密码错误"
@@ -73,6 +77,7 @@ func (c *UserController) Profile() {
 	c.TplName = "user/user_profile.tpl"
 }
 
+//个人设置（手机，邮箱，密码）
 func (c *UserController) ProfilePost() {
 	c.Data["uid"] = c.GetSession("uid")
 	var uid uint
@@ -116,6 +121,14 @@ func (c *UserController) Headimg() {
 }
 
 func (c *UserController) Lock() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求锁定用户,权限验证失败")
+		c.Abort("503")
+	}
+
 	var user muser.User
 	tmp, _ := c.GetUint16(":id")
 	user.Id = uint(tmp)
@@ -133,6 +146,13 @@ func (c *UserController) Lock() {
 
 }
 func (c *UserController) Unlock() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求解锁用户,权限验证失败")
+		c.Abort("503")
+	}
 	var user muser.User
 	tmp, _ := c.GetUint16(":id")
 	user.Id = uint(tmp)
@@ -150,6 +170,13 @@ func (c *UserController) Unlock() {
 }
 
 func (c *UserController) Jqrmuser() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isposition("OS", uid) { //只有运维经理，可以 添加，修改任意用户资料
+		//		s_url := c.Ctx.Request.Referer()
+		beego.Debug("动作:请求删除用户,权限验证失败")
+		c.Abort("503") //JS请求，并不会真正跳转成功，但也不会往下执行
+	}
 	userid, _ := c.GetInt("userid")
 	beego.Debug("删除用户Id:", userid)
 	var user muser.User

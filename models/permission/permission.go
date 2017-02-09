@@ -129,6 +129,8 @@ func Getposper(poid uint) string {
 
 	return posper
 }
+
+//详细权限检查
 func Isperitem(name string, uid uint) bool {
 	ss := false
 	err := utils.GetCache("show."+name+fmt.Sprintf("%d", uid), &ss)
@@ -147,6 +149,8 @@ func Isperitem(name string, uid uint) bool {
 	return ss
 
 }
+
+//环境权限验证
 func Isuserper(name string, uid uint) bool {
 	ss := false
 	err := utils.GetCache("userper."+name+fmt.Sprintf("%d", uid), &ss)
@@ -163,4 +167,24 @@ func Isuserper(name string, uid uint) bool {
 	}
 	return ss
 
+}
+
+//职位验证
+func Isposition(sign string, uid uint) bool {
+	ss := false
+	err := utils.GetCache("position."+sign+fmt.Sprintf("%d", uid), &ss)
+	if err != nil {
+		var user user.User
+		user.Id = uid
+		user.Read()
+		user.Position.Read()
+		if user.Position.Sign == sign {
+			ss = true
+		} else {
+			beego.Debug("Position.Sign:", user.Position.Sign, "User.Sign:", sign)
+			ss = false
+		}
+		utils.SetCache("position."+sign+fmt.Sprintf("%d", uid), ss)
+	}
+	return ss
 }

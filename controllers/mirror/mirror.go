@@ -5,6 +5,7 @@ import (
 	"fmt"
 	ctl "lvbu/controllers"
 	"lvbu/models/mirror"
+	mper "lvbu/models/permission"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -50,7 +51,12 @@ func (c *MirController) Get() {
 
 //添加镜像页面GET
 func (c *MirController) Add() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mira", uid) { //镜像添加(mira)
+		beego.Debug("动作:请求添加镜像,权限验证失败")
+		c.Abort("503")
+	}
 	var mirror_groups []mirror.Mirrorgroup
 	new(mirror.Mirrorgroup).Query().All(&mirror_groups)
 	c.Data["mirgs"] = mirror_groups
@@ -59,11 +65,16 @@ func (c *MirController) Add() {
 
 //添加镜像页面Post
 func (c *MirController) AddPost() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mira", uid) { //镜像添加(mira)
+		beego.Debug("动作:请求添加镜像POST,权限验证失败")
+		c.Abort("503")
+	}
 	mirname := c.GetString("mirname")
 	mirrorgroup := c.GetString("mirrorgroup")
 	hubaddress := c.GetString("hubaddress")
-	//判断是否为空放在JS里面还是这样
+	//判断是否为空已放在JS里面
 	mir := new(mirror.Mirror)
 	mir.Name = mirname
 	id, _ := strconv.Atoi(mirrorgroup)
@@ -81,19 +92,29 @@ func (c *MirController) AddPost() {
 }
 
 func (c *MirController) Edit() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mire", uid) { //镜像修改(mire)
+		beego.Debug("动作:请求镜像修改,权限验证失败")
+		c.Abort("503")
+	}
 	c.TplName = "mirror/mirror_edit.tpl"
 }
 
 func (c *MirController) List() {
-	c.Data["uid"] = c.GetSession("uid")
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mirs", uid) { //镜像查看(mirs)
+		beego.Debug("动作:请求镜像列表,权限验证失败")
+		c.Abort("503")
+	}
 
 	//取出所有镜像类别
 	var mirror_groups []mirror.Mirrorgroup
 	row, _ := new(mirror.Mirrorgroup).Query().All(&mirror_groups)
 	fmt.Println(mirror_groups)
 	c.Data["mirgs"] = mirror_groups
-	// 如果get有mirgid 类别ID说明是从添加镜像页面过来，取出该类别的所有镜像，当前页列出该 类别镜像
+	// 如果get有mirgid 类别ID说明是从添加镜像页面过来，取出该类别的所有镜像，优先显示当前页列出该 "mirgid"类别镜像
 	var mirgid uint
 	if re_mirgid := c.GetString("mirgid"); re_mirgid != "" {
 		a, _ := (strconv.ParseInt(re_mirgid, 10, 0))
@@ -121,6 +142,12 @@ func (c *MirController) List() {
 
 //JQuery 请求镜像类别列表
 func (c *MirController) JQlist() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mirs", uid) { //镜像查看(mirs)
+		beego.Debug("动作:请求镜像列表,权限验证失败")
+		c.Abort("503")
+	}
 	mirgid := c.GetString("mirgid")
 	if mirgid != "" {
 		var mirs []*mirror.Mirror
@@ -140,6 +167,12 @@ func (c *MirController) JQlist() {
 
 //JQuery 请求修改镜像信息
 func (c *MirController) JQmirr() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mire", uid) { //镜像修改(mire)
+		beego.Debug("动作:请求镜像修改,权限验证失败")
+		c.Abort("503")
+	}
 	mirid, err := c.GetInt("mirid")
 	if err == nil {
 		var mirs mirror.Mirror
@@ -172,6 +205,12 @@ func (c *MirController) JQmirr() {
 
 //JQuery 请求删除镜像信息
 func (c *MirController) JQrmmirr() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("mird", uid) { //镜像删除(mird)
+		beego.Debug("动作:请求删除镜像,权限验证失败")
+		c.Abort("503")
+	}
 	mirid, err := c.GetInt("mirid")
 	if err == nil {
 		var mirs mirror.Mirror
