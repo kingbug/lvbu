@@ -172,7 +172,7 @@ INSERT INTO `lvbu_peritem` VALUES ('12', '项目删除', 'prod', '2');
 INSERT INTO `lvbu_peritem` VALUES ('13', '节点查看', 'nods', '3');
 INSERT INTO `lvbu_peritem` VALUES ('14', '节点编辑', 'node', '3');
 INSERT INTO `lvbu_peritem` VALUES ('15', '节点添加', 'noda', '3');
-INSERT INTO `lvbu_peritem` VALUES ('16', '节点删除', 'macd', '3');
+INSERT INTO `lvbu_peritem` VALUES ('16', '节点删除', 'nodd', '3');
 INSERT INTO `lvbu_peritem` VALUES ('17', '镜像编辑', 'mire', '6');
 INSERT INTO `lvbu_peritem` VALUES ('18', '镜像添加', 'mira', '6');
 INSERT INTO `lvbu_peritem` VALUES ('19', '镜像删除', 'mird', '6');
