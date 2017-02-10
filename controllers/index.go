@@ -14,7 +14,7 @@ type MainController struct {
 }
 
 func (c *MainController) Get() {
-	c.TplName = "common/503.tpl"
+	c.TplName = "sys/index.tpl"
 }
 func (c *BaseController) Prepare() {
 	_, ok := (c.GetSession("uid")).(uint)
