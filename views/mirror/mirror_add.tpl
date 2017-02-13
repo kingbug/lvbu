@@ -57,7 +57,7 @@
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">镜像类型</label>
                                     <div class="col-sm-10">    
-										{{ range .mirgs}}
+										{{ range Getenv}}
 											<label>
                                                 <input type="radio" name="mirrorgroup" class="minimal" value="{{ .Id }}">{{ .Name }}
                                             </label>

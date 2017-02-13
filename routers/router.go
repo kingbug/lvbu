@@ -39,6 +39,7 @@ func init() {
 	beego.Router("/maclist", &machine.MacController{}, "*:List")
 	beego.Router("/macedit/:id([0-9]+)", &machine.MacController{}, "*:Edit")
 	beego.Router("/macadd", &machine.MacController{}, "*:Add")
+	beego.Router("/macdel", &machine.MacController{}, "post:Del")
 	//镜像
 	beego.Router("/mirrlist", &mirror.MirController{}, "*:List")
 	beego.Router("/mirredit", &mirror.MirController{}, "*:Edit")
@@ -60,6 +61,7 @@ func init() {
 	beego.Router("/jqupdatepos", &sys.PosController{}, "*:Jqupdatepos")
 	beego.Router("/jqrmpos/:id([0-9]+)", &sys.PosController{}, "*:Jqrmpos")
 	beego.Router("/about", &sys.SysController{}, "*:About")
+	beego.Router("/503", &sys.SysController{}, "*:Noentry")
 	//记录
 	beego.Router("/reclist", &record.RecController{}, "*:List")
 	//配置

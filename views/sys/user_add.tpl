@@ -247,6 +247,11 @@
 							                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i> {{.message}}</label>
 							                 
 							                </div>
+										{{else}}
+											<div class="form-group has-error" style="display:none">
+							                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i> {{.message}}</label>
+							                 
+							                </div>
 										{{end}}
                                     </div>
                                 </div>

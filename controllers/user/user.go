@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	//"fmt"
 	ctl "lvbu/controllers"
 	mper "lvbu/models/permission"
@@ -38,8 +39,10 @@ func (c *UserLoginController) Post() {
 	user.Read("UserName")
 	if user.Passwd == utils.Md5(passwd) {
 		c.SetSession("uid", user.Id)
-		if c.GetString("redirect") != "" { //登陆成功跳转登陆前页面
-			c.Redirect(c.GetString("redirect"), 302)
+		if c.GetSession("redirect") != nil { //登陆成功跳转登陆前页面
+			redirect := c.GetSession("redirect")
+			c.SetSession("redirect", nil)
+			c.Redirect(fmt.Sprintf("%s", redirect), 302)
 		}
 		c.Redirect("/index", 302)
 	} else {

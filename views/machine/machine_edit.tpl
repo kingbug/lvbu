@@ -4,9 +4,7 @@
     {{template "common/meta.tpl" .}}
     <!-- Bootstrap 3.3.6 -->
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-    <script src="/static/plugins/input-mask/jquery.inputmask.js"></script>
-    <script src="/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
-    <script src="/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>
+    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
     <!-- Ionicons -->
@@ -49,43 +47,63 @@
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" method="post" onsubmit="return toVaild()">
+								<input type="text" name="id" style="display:none" value="{{.mac.Id}}"/>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">主机名称</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName"
+                                        <input type="text" class="form-control" id="inputName" name="name"
                                                placeholder="中文，用于登记主机名称" value="{{.mac.Name}}">
                                     </div>
                                 </div>                                
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">外网ip</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="有外网请填写外网ip" value="{{.mac.Ipaddr1}}">
+                                        <input type="text" class="form-control" id="inputName" name="ipaddr1" placeholder="有外网请填写外网ip" value="{{.mac.Ipaddr1}}">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">内网ip</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="有内网请填写内网ip" value="{{.mac.Ipaddr2}}">                                    	
+                                        <input type="text" class="form-control" id="inputName" name="ipaddr2" placeholder="有内网请填写内网ip" value="{{.mac.Ipaddr2}}">                                    	
 									</div>
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">管理地址</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="有外网请填写外网ip" value="{{.mac.Adminurl}}">
+                                        <input type="text" class="form-control" id="inputName" name="adminurl" placeholder="有外网请填写外网ip" value="{{.mac.Adminurl}}">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">硬件信息</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="硬件信息"  value="{{.mac.Content}}">
+                                        <input type="text" class="form-control" id="inputName" name="content" placeholder="硬件信息"  value="{{.mac.Content}}">
                                     </div>
-                                </div>                                
+                                </div>     
+								<div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">所属环境</label>
+                                    <div class="col-sm-10">
+                                        <label for="inputName" class="col-sm-2 control-label">{{ Getmacforenv .mac.Id}}</label>
+                                    </div>
+                                </div>                             
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
                                 <button type="submit" class="btn btn-danger">Submit</button>
-                            </div>
+	                            {{if .message}}
+									<div class="form-group has-error">
+					                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i> {{.message}}</label>
+					                 
+					                </div>
+								{{else}}
+									<div class="form-group has-error" style="display:none">
+					                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i><span></span></label>
+					                 
+					                </div>
+								{{end}}
+							
+							</div>
+							
                         </div>
                         </form>
                     </div>
@@ -120,8 +138,54 @@
 <!-- AdminLTE for demo purposes -->
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
+
+<script src="/static/plugins/input-mask/jquery.inputmask.js"></script>
+<script src="/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>
+<script src="/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>
 <script>
-    $("[data-mask]").inputmask();
+	function toVaild() {
+		var adminurl = $("form input[name='adminurl']").val();
+		var ipaddr1  = $("form input[name='ipaddr1']").val();
+		var ipaddr2  = $("form input[name='ipaddr2']").val();
+		var hostname = $("form input[name='name']").val();
+		var contr = true
+		return contr;
+		if (hostname== ""){
+			$(".has-error").show();
+			$(".has-error span").html("主机名不能为空<br>");
+			contr = false;
+		}
+		if (ipaddr1 == "" && ipaddr2==""){
+			$(".has-error").show();
+			
+			$(".has-error span").html($(".has-error span").html() + "内网IP或外网IP选填一项<br>");
+			contr = false;
+		}
+		var isnull; //子字符串是空时,indexOf不返回-1
+		if (ipaddr1 == ""){
+			if (adminurl.indexOf(ipaddr2) == -1 ){
+				$(".has-error").show();
+				$(".has-error span").html($(".has-error span").html() + "管理地址必须使用内网IP或外网IP其一<br>");
+				contr = false;
+			}
+		}
+		if (ipaddr2 == "") {
+			if (adminurl.indexOf(ipaddr1) == -1 ){
+				$(".has-error").show();
+				$(".has-error span").html($(".has-error span").html() + "管理地址必须使用内网IP及外网IP其一<br>");
+				contr = false;
+			}
+		}
+		if(adminurl.indexOf(ipaddr1) == -1 && adminurl.indexOf(ipaddr2) == -1){
+			$(".has-error").show();
+			$(".has-error span").html($(".has-error span").html() + "管理地址必须使用内网IP及外网IP其一加端口号<br>");
+			contr = false;
+		}
+		
+
+		return contr;
+	}
+	
 </script>
 </body>
 </html>

@@ -19,7 +19,7 @@ func (c *MainController) Get() {
 func (c *BaseController) Prepare() {
 	_, ok := (c.GetSession("uid")).(uint)
 	if !ok && c.Ctx.Request.RequestURI != "/login" {
-		c.Data["redirect"] = c.Ctx.Request.RequestURI
+		c.SetSession("redirect", c.Ctx.Request.RequestURI)
 		c.Redirect("/login", 302)
 	}
 }

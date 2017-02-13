@@ -37,8 +37,10 @@
         <section class="content-header">
             <h1>添加主机
                 <small>
-                    <button type="button" class="btn btn-block btn-primary btn-xs" onclick="history.go(-1)">返回列表
+				<a href="/maclist">
+                    <button type="button" class="btn btn-block btn-primary btn-xs">返回列表
                     </button>
+				</a>
                 </small>
             </h1>
             <ol class="breadcrumb">
@@ -53,55 +55,77 @@
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" method="post">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">主机名称</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName"
-                                               placeholder="中文，用于登记主机名称">
+                                        <input type="text" class="form-control" id="inputName" name="name" value="{{.mac.Name}}"
+											placeholder="中文，用于登记主机名称">
                                     </div>
+									{{if .nameerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.nameerr}}</small>
+										</label>
+									{{end}}
                                 </div>                                
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">外网ip</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="有外网请填写外网ip">
+                                        <input type="text" class="form-control" id="inputName" name="ipaddr1" placeholder="有外网请填写外网ip">
                                     </div>
+									
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">内网ip</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="有内网请填写内网ip">                                    	
+                                        <input type="text" class="form-control" id="inputName" name="ipaddr2" placeholder="有内网请填写内网ip">                                    	
 									</div>
+									{{if .ipaddr2err}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.ipaddr2err}}</small>
+										</label>
+									{{end}}
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">管理接口</label>
                                     <div class="col-sm-10">                                       
                                             <label>
-                                                <input type="radio" name="r1" class="minimal">内网
+                                                <input type="radio" name="interface" value="1" class="minimal" checked>内网
                                             </label>
                                             <label>
-                                                <input type="radio" name="r1" class="minimal">外网
+                                                <input type="radio" name="interface" value="2" class="minimal">外网
                                             </label> 
 											<label>
-												<input type="text" class="form-control" id="inputName" placeholder="端口"> 
+												<input type="text" class="form-control" id="inputName" name="port" placeholder="端口"> 
 											</label>                                      
                                     </div>
+									{{if .porterr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.porterr}}</small>
+										</label>
+									{{end}}
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">硬件信息</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="硬件信息">
+                                        <input type="text" class="form-control" id="inputName" name="context" placeholder="硬件信息">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">所属环境</label>
                                     <div class="col-sm-10">
-                                        <select class="form-control select2" style="width: 100%;">
-                                            <option selected="selected">开发环境</option>
-                                            <option>测试环境</option>
-                                            <option>运维环境</option>
+                                        <select class="form-control select2" name="env" style="width: 100%;">
+											{{range Getenv}}
+												<option value="{{.Id}}">{{.Name}}</option>
+											{{end}}
+                                            
                                         </select>
                                     </div>
+									{{if .env2err}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.enverr}}</small>
+										</label>
+									{{end}}
                                 </div>
                         </div>
                         <div class="form-group">

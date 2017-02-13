@@ -3,6 +3,7 @@ package init
 import (
 	"lvbu/models/env"
 	men "lvbu/models/env"
+	mac "lvbu/models/machine"
 	mper "lvbu/models/permission"
 	"lvbu/models/user"
 	"lvbu/utils"
@@ -20,6 +21,8 @@ func InitTemplate() {
 	beego.AddFuncMap("Getposition", user.Getposition)
 	beego.AddFuncMap("Getenv", env.Getenv)
 	beego.AddFuncMap("Getenvidlist", men.GetEnvIdList)
+
+	beego.AddFuncMap("Getmacforenv", mac.GetMacforenv)
 
 	//	beego.AddFuncMap("getProjectname", projects.GetProjectName)
 	//	beego.AddFuncMap("getLeaveProcess", leaves.ListLeaveApproverProcessHtml)

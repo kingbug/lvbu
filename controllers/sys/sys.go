@@ -12,3 +12,7 @@ func (c *SysController) About() {
 	c.Data["uid"] = c.GetSession("uid")
 	c.TplName = "sys/sys_about.tpl"
 }
+
+func (c *SysController) Noentry() {
+	c.Abort("503")
+}

@@ -1,6 +1,7 @@
 package machine
 
 import (
+	"errors"
 	"lvbu/models/env"
 	"time"
 
@@ -53,6 +54,24 @@ func (m *Machine) Delete() error {
 	return nil
 }
 
+func (m *Machine) Getenvsign() (string, error) {
+	if m.Id == 0 { //uint 默认为零，但数据库Id是从1 开始的
+		return "", errors.New("Machine.Id为空")
+	}
+	m.Read()
+	return m.Env.Sign, nil
+}
+
 func (m *Machine) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
+}
+
+func GetMacforenv(macid uint) string {
+	if macid == 0 {
+		beego.Debug("动作：查询主机环境出错")
+	}
+	mach := Machine{Id: macid}
+	mach.Read()
+	mach.Env.Read()
+	return mach.Env.Name
 }

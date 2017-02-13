@@ -2,6 +2,7 @@
 <html>
 <head>
     {{template "common/meta.tpl" .}}
+	<link rel="stylesheet" href="/static/plugins/pace/pace.min.css">
     <!-- Bootstrap 3.3.6 -->
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
     <!-- Font Awesome -->
@@ -93,9 +94,12 @@
                                                         </a>
 														{{end}}
 														{{if(Isperitem "macd" $.uid)}}
-                                                        <a class="btn" href="/macdel/{{$val.Id}}">
+														<span class="rm_mac">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{$val.Id}}</i>
+														</span>
 														{{end}}
                                                     </td>
                                                 </tr>
@@ -151,9 +155,12 @@
                                                         </a>
 														{{end}}
 														{{if(Isperitem "macd" $.uid)}}
-                                                        <a class="btn" href="/macdel/{{$val.Id}}">
+                                                        <span class="rm_mac">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{$val.Id}}</i>
+														</span>
 														{{end}}
                                                     </td>
                                                 </tr>
@@ -207,9 +214,13 @@
                                                         </a>
 														{{end}}
 														{{if(Isperitem "macd" $.uid)}}
-                                                        <a class="btn" href="/macdel/{{$val.Id}}">
+                                                        <span class="rm_mac">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
-                                                        </a>
+														</a>
+														<i class="id" style="display:none">{{$val.Id}}</i>
+                                                        
+														</span>
 														{{end}}
                                                     </td>
                                                 </tr>
@@ -241,6 +252,33 @@
         <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
+	
+		<!-- 确认框 -->
+	<div class="verify-modal">
+        <div class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span id="ver_break" aria-hidden="true">×</span></button>
+                <h4 class="modal-title">Default Modal</h4>
+              </div>
+              <div class="modal-body">
+                <p>One fine body…</p>
+              </div>
+              <div class="modal-footer">
+                <button id="ver_close" type="button" class=" btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button id="ver_save" type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+      </div>
+	<!-- 确认框 end -->
+	
     {{template "common/footitle.tpl" .}}
 </div>
 <!-- ./wrapper -->
@@ -254,6 +292,8 @@
 <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
 <!-- SlimScroll -->
 <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<!-- PACE -->
+<script src="/static/plugins/pace/pace.min.js"></script>
 <!-- FastClick -->
 <script src="/static/plugins/fastclick/fastclick.js"></script>
 <!-- AdminLTE App -->
@@ -262,11 +302,61 @@
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
 <script>
-    $(function () {
-        $('#example1').DataTable();
-        $('#example2').DataTable();
-        $('#example3').DataTable();
-    });
+
+    var table1 = $('#example1').DataTable();
+    var table2 = $('#example2').DataTable();
+    var table3 = $('#example3').DataTable();
+	$(document).ajaxStart(function() { Pace.restart(); });
+	$(".rm_mac").click(function(){
+		$(".modal").show(1000);
+		mac_id = $(this).find("i.id").text();
+		mac_td1 = $(this).parent().siblings("td:nth-child(1)");
+		mac_ip	= $(this).parent().siblings("td:nth-child(3)");
+		$(".verify-modal").find(".modal-title").html("警告");
+		$(".verify-modal").find(".modal-body").html("确认删除主机 : <b>" + mac_td1.html()+ "</b> ,内IP : <b>" + mac_ip.html() + ",</b>");
+		var tr = $(this).parent().parent();
+		var table
+		if (tr.parent().parent().attr("id") == "example1") {
+			table = table1
+		} else if (tr.parent().parent().attr("id") == "example2"){
+			table = table2
+		} else { table = table3}
+		//给确认按钮动态绑定事件
+		abcc = function (){
+			$.ajax({
+				url:"/macdel",
+				type: "post",
+				data:{id: mac_id},
+				dataType: "json",
+				success: function(msg) {
+					tr.addClass("selected");
+					table.row('.selected').remove().draw( false );
+					$("#ver_break").click();
+					return;
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alert(XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503"
+					}
+				}
+			});
+		}
+	})
+	
+	//确认框关闭
+	$("#ver_close").click(function(){
+		$(".modal").hide(1000);
+	})
+	$("#ver_break").click(function(){
+		$(".modal").hide(1000);
+	})
+			
+	$("#ver_save").click(function(){
+		abcc();
+		
+		
+	})
 </script>
 </body>
 </html>

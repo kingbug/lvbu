@@ -46,7 +46,7 @@
                 <div class="col-md-12">
                     <div class="box">                       
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" method="post" onsubmit="return toVaild()">
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">项目名称</label>
                                     <div class="col-sm-10">
@@ -121,6 +121,10 @@
         //Initialize Select2 Elements
         $(".select2").select2();
     });
+	
+	function toVaild() {
+		return true;
+	}
 </script>
 </body>
 </html>
