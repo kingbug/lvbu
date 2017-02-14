@@ -55,3 +55,11 @@ func (m *Project) Delete() error {
 func (m *Project) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
 }
+
+func Getproject() []*Project {
+	var pro []*Project
+	if _, err := new(Project).Query().All(&pro, "Id", "Name"); err != nil {
+		beego.Error("动作:数据库操作,查询项目列表出错:", err)
+	}
+	return pro
+}

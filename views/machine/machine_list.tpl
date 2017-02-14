@@ -315,7 +315,7 @@
 		$(".verify-modal").find(".modal-title").html("警告");
 		$(".verify-modal").find(".modal-body").html("确认删除主机 : <b>" + mac_td1.html()+ "</b> ,内IP : <b>" + mac_ip.html() + ",</b>");
 		var tr = $(this).parent().parent();
-		var table
+		var table;
 		if (tr.parent().parent().attr("id") == "example1") {
 			table = table1
 		} else if (tr.parent().parent().attr("id") == "example2"){

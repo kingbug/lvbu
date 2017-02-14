@@ -77,19 +77,27 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-												 {{range $key, $val :=.macd}}
+												 {{range Getproject}}
                                                 <tr>
-                                                    <td>账户中心</td>
+                                                    <td>{{.Name}}</td>
                                                     <td><span class="label label-success">正常运行</span>
                                                     </td>
                                                     <td><a href="/nodelist">5</a></td>
                                                     <td>
-                                                        <a class="btn">
+                                                        {{if(Isperitem "proe" $.uid)}}
+                                                        <a class="btn" href="/proedit/{{.Id}}">
                                                             <i class="fa fa-edit">编辑</i>
                                                         </a>
-                                                        <a class="btn">
+														{{end}}
+                                                        
+														{{if(Isperitem "prod" $.uid)}}
+                                                        <span class="rm_pro">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{.Id}}</i>
+														</span>
+														{{end}}
                                                     </td>
                                                 </tr>
                                                {{end}}
@@ -120,22 +128,30 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-												{{range $key, $val :=.macq}}
+												 {{range Getproject}}
                                                 <tr>
-                                                    <td>账户中心</td>
+                                                    <td>{{.Name}}</td>
                                                     <td><span class="label label-success">正常运行</span>
                                                     </td>
                                                     <td><a href="/nodelist">5</a></td>
                                                     <td>
-                                                        <a class="btn">
+                                                        {{if(Isperitem "proe" $.uid)}}
+                                                        <a class="btn" href="/proedit/{{.Id}}">
                                                             <i class="fa fa-edit">编辑</i>
                                                         </a>
-                                                        <a class="btn">
+														{{end}}
+                                                        
+														{{if(Isperitem "prod" $.uid)}}
+                                                        <span class="rm_pro">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{.Id}}</i>
+														</span>
+														{{end}}
                                                     </td>
                                                 </tr>
-                                                {{end}}
+                                               {{end}}
                                                 </tbody>
                                                 <tfoot>
                                                 <tr>
@@ -191,12 +207,20 @@
                                                     </td>
                                                     <td><a href="/nodelist">5</a></td>
                                                     <td>
-                                                        <a class="btn">
+														{{if(Isperitem "proe" $.uid)}}
+                                                        <a class="btn" href="/proedit/{{.Id}}">
                                                             <i class="fa fa-edit">编辑</i>
                                                         </a>
-                                                        <a class="btn">
+														{{end}}
+                                                        
+														{{if(Isperitem "prod" $.uid)}}
+                                                        <span class="rm_pro">
+														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{.Id}}</i>
+														</span>
+														{{end}}
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -240,6 +264,34 @@
         <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
+	
+			<!-- 确认框 -->
+	<div class="verify-modal">
+        <div class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span id="ver_break" aria-hidden="true">×</span></button>
+                <h4 class="modal-title">Default Modal</h4>
+              </div>
+              <div class="modal-body">
+                <p>One fine body…</p>
+              </div>
+              <div class="modal-footer">
+                <button id="ver_close" type="button" class=" btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button id="ver_save" type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+      </div>
+	<!-- 确认框 end -->
+	
+	
     {{template "common/footitle.tpl" .}}    
 </div>
 <!-- ./wrapper -->
@@ -260,11 +312,69 @@
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
 <script>
-    $(function () {
-        $('#example1').DataTable();
-        $('#example2').DataTable();
-        $('#example3').DataTable();
-    });
+
+    var table1 = $('#example1').DataTable();
+    var table2 = $('#example2').DataTable();
+    var table3 = $('#example3').DataTable();
+
+	
+	
+	$(".rm_pro").click(function(){
+		var pro_id = $(this).find("i.id").text();
+		var mac_name = $(this).parent().siblings("td:nth-child(1)").text();
+		var node_num = $(this).parent().siblings("td:nth-child(3)").text();
+		$(".verify-modal").find(".modal-title").html("警告");
+		$(".verify-modal").find(".modal-body").html("确认删除项目 : <b>" + mac_name+ "</b> ,节点数量 : <b>" + node_num + "</b>");
+		$(".modal").show(1000);	
+		var tr = $(this).parent().parent();
+		var table;
+		if (tr.parent().parent().attr("id") == "example1") {
+			table = table1
+		} else if (tr.parent().parent().attr("id") == "example2"){
+			table = table2
+		} else { table = table3}
+		var tr_index = table.row(tr).index();
+		//给确认按钮动态绑定事件
+		abcc = function (){
+			$.ajax({
+				url:"/prodel",
+				type: "post",
+				data:{id: pro_id},
+				dataType: "json",
+				success: function(msg) {
+					if (msg == "success"){
+						table1.row(tr_index).remove().draw( false );
+						table2.row(tr_index).remove().draw( false );
+						table3.row(tr_index).remove().draw( false );
+						$("#ver_break").click();
+						return;
+					} else {
+						alert(msg)
+					}
+					
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alert(XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503"
+					}
+				}
+			});
+		}
+	});
+	
+	
+		//确认框关闭
+	$("#ver_close").click(function(){
+		$(".modal").hide(1000);
+	})
+	$("#ver_break").click(function(){
+		$(".modal").hide(1000);
+	})
+			
+	$("#ver_save").click(function(){
+		abcc();
+	})
 </script>
 </body>
 </html>

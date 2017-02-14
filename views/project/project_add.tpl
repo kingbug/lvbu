@@ -50,35 +50,81 @@
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">项目名称</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="中文，用于登记项目名称">
+                                        <input type="text" class="form-control" id="inputName" name="name" placeholder="中文，用于登记项目名称" value="{{.pro.Name}}">
                                     </div>
+									{{if .nameerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.nameerr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none;" class="nameerr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">项目标识</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="字母+数字，用于项目唯一性标识">
+                                        <input type="text" class="form-control" id="inputName" name="sign" placeholder="字母+数字，用于项目唯一性标识" value="{{.pro.Sign}}">
                                     </div>
+									{{if .signerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.signerr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none;" class="signerr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
                                 </div>
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">仓库地址</label>
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="仅支持git">
+                                        <input type="text" class="form-control" id="inputName" name="git" placeholder="仅支持git" value="{{.pro.Git}}">
                                     </div>
+									{{if .giterr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.giterr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none;" class="giterr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
                                 </div>
 								<div class="form-group">								
                                     <label for="inputName" class="col-sm-2 control-label">帐号帐号</label>									
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="git帐号密码，冒号分割。如admin:admin">
+                                        <input type="text" class="form-control" id="inputName" name="gituser" placeholder="git帐号密码，冒号分割。如admin:admin" value="{{.pro.Gituser}}">
                                     </div>
+									{{if .gitusererr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.gitusererr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none" class="gitusererr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
                                 </div>
 								<div class="form-group">
                                     <label for="inputExperience" class="col-sm-2 control-label">忽略文件</label>
 
                                     <div class="col-sm-10">
-                                        <textarea class="form-control" id="inputExperience"
-                                                  placeholder="git需要忽略的文件"></textarea>
+                                        <textarea class="form-control" id="inputExperience" name="insfile"
+                                                  placeholder="git需要忽略的文件">{{.pro.Insfile}}</textarea>
                                     </div>
-                                </div>              
+									{{if .insfileerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.insfileerr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none" class="insfileerr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
+                                </div>
+								      
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-10">
                                         <button type="submit" class="btn btn-danger">Submit</button>
@@ -123,7 +169,29 @@
     });
 	
 	function toVaild() {
-		return true;
+		var name = $("form input[name='name']").val();
+		var sign = $("form input[name='sign']").val();
+		var git	 = $("form input[name='git']").val();
+		var gituser = $("form input[name='gituser']").val();
+		var contr = true
+		if ( name == "") {
+			contr = false;
+			$(".nameerr small").text("项目名称不能为空");
+			$(".nameerr").show();
+		}else {
+			$(".nameerr").hide();
+		}
+		if (sign == "") {
+			contr = false;
+			$(".signerr small").text("项目标识不能为空");
+			$(".signerr").show(); 
+		}else {$(".signerr").hide();}
+		if (git == "") {
+			contr = false;
+			$(".giterr small").text("仓库地址不能为空");
+			$(".giterr").show(); 
+		} else {$(".giterr").hide();}
+		return contr;
 	}
 </script>
 </body>

@@ -55,7 +55,7 @@ func (m *Env) Query() orm.QuerySeter {
 func Getenv() []*Env {
 	var envs []*Env
 	var env Env
-	_, err := env.Query().All(&envs, "Id", "Name")
+	_, err := env.Query().All(&envs, "Id", "Name", "Sign")
 	if err != nil {
 		beego.Error("查询数据库出错:" + err.Error())
 	}

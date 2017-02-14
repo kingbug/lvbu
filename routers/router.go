@@ -29,8 +29,9 @@ func init() {
 
 	//项目
 	beego.Router("/prolist", &project.ProController{}, "*:List")
-	beego.Router("/prodit", &project.ProController{}, "*:Edit")
+	beego.Router("/proedit/:id([0-9]+)", &project.ProController{}, "*:Edit")
 	beego.Router("/proadd", &project.ProController{}, "*:Add")
+	beego.Router("/prodel", &project.ProController{}, "post:Del")
 	//节点
 	beego.Router("/nodelist", &node.NodeController{}, "*:List")
 	beego.Router("/nodedit", &node.NodeController{}, "*:Edit")
