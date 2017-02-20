@@ -242,7 +242,9 @@ func (c *UserController) EditPost() {
 		beego.Error("修改用户失败,有必填项留空", user)
 		c.TplName = "sys/user_edit.tpl"
 	} else {
-		user.Passwd = utils.Md5(user.Passwd)
+		if copyuser.Passwd != user.Passwd {
+			user.Passwd = utils.Md5(user.Passwd)
+		}
 		user.Id = uid
 		user.Created = copyuser.Created
 		err = user.Update()
