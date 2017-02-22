@@ -54,6 +54,7 @@
                 </ul>
             </li>
 			{{end}}
+			<!--
 			{{if(Isperitem "cons" .uid)}}
             <li class="treeview">
                 <a href="#">
@@ -63,13 +64,15 @@
                 </span>
                 </a>
                 <ul class="treeview-menu">
-					{{if(Isperitem "cona" .uid)}}
+					{{if(Isperitem "cons" .uid)}}
                     <li><a href="/conlist"><i class="fa fa-circle-o"></i>配置列表</a></li>
 					{{end}}
                     <li><a href="#"><i class="fa fa-circle-o"></i>配置查询</a></li>
                 </ul>
             </li>
 			{{end}}
+			-->
+			
 			{{if(Isperitem "mirs" .uid)}}
             <li class="treeview">
                 <a href="#">

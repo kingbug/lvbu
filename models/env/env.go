@@ -81,3 +81,19 @@ func GetEnvIdList(perm string) []uint {
 	beego.Debug(envidlist)
 	return envidlist
 }
+
+//从网页标识查找环境Id
+func Getenvid(sign string) uint {
+	tmp_sign := strings.ToUpper(sign)
+
+	var env Env
+	if err := new(Env).Query().Filter("Sign", tmp_sign).One(&env); err != nil {
+		if !strings.Contains(err.Error(), "no row found") {
+			beego.Error("动作：查询环境Id，数据库操作出错:", err)
+		} else {
+			beego.Info("请求node节点为零")
+		}
+
+	}
+	return env.Id
+}

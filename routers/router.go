@@ -33,7 +33,7 @@ func init() {
 	beego.Router("/proadd", &project.ProController{}, "*:Add")
 	beego.Router("/prodel", &project.ProController{}, "post:Del")
 	//节点
-	beego.Router("/nodelist", &node.NodeController{}, "*:List")
+	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodelist", &node.NodeController{}, "*:List")
 	beego.Router("/nodedit", &node.NodeController{}, "*:Edit")
 	beego.Router("/nodeadd", &node.NodeController{}, "*:Add")
 	//主机
@@ -66,6 +66,11 @@ func init() {
 	//记录
 	beego.Router("/reclist", &record.RecController{}, "*:List")
 	//配置
-	beego.Router("/conlist", &config.ConController{}, "*:List")
-
+	beego.Router("/:proid([0-9]+)/conlist", &config.ConController{}, "*:List")
+	beego.Router("/confadd", &config.ConController{}, "post:Add")
+	beego.Router("/confedit", &config.ConController{}, "post:Edit")
+	beego.Router("/confdel", &config.ConController{}, "post:Del")
+	beego.Router("/confsync", &config.ConController{}, "post:Sync")
+	beego.Router("/confignore", &config.ConController{}, "post:Ignore")
+	beego.Router("/confdown", &config.ConController{}, "get:Download")
 }

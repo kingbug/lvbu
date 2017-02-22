@@ -55,3 +55,11 @@ func (m *Node) Delete() error {
 func (m *Node) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
 }
+
+func Getnode(proid uint) []*Node {
+	var node []*Node
+	if _, err := new(Node).Query().Filter("Pro__Id", proid).All(&node); err != nil {
+		beego.Error("动作:数据库操作,查询项目所载节点列表出错:", err)
+	}
+	return node
+}

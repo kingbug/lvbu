@@ -14,5 +14,4 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	orm.RunSyncdb("default", false, true)
 	beego.Run()
-
 }

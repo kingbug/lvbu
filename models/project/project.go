@@ -63,3 +63,13 @@ func Getproject() []*Project {
 	}
 	return pro
 }
+
+//返回项目所载节点数量
+func Getprofornodecount(proid uint) int64 {
+	var count int64
+	var err error
+	if count, err = new(Node).Query().Filter("Pro__Id", proid).Count(); err != nil {
+		beego.Error("动作:数据库操作,查询项目节点数量出错:", err)
+	}
+	return count
+}

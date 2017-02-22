@@ -26,7 +26,9 @@ func InitTemplate() {
 	beego.AddFuncMap("Getmacforenv", mac.GetMacforenv)
 
 	beego.AddFuncMap("Getproject", mpro.Getproject)
+	beego.AddFuncMap("Getprofornodecount", mpro.Getprofornodecount)
 
+	beego.AddFuncMap("Getnode", mpro.Getnode)
 	//	beego.AddFuncMap("getProjectname", projects.GetProjectName)
 	//	beego.AddFuncMap("getLeaveProcess", leaves.ListLeaveApproverProcessHtml)
 	//	beego.AddFuncMap("getExpenseProcess", expenses.ListExpenseApproverProcessHtml)

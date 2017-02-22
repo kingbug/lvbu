@@ -79,10 +79,28 @@
                                                 <tbody>
 												 {{range Getproject}}
                                                 <tr>
-                                                    <td>{{.Name}}</td>
+                                                    <td>{{.Name}}
+														{{if $.newpro}}
+															{{if eq .Id $.newpro}}
+																	<span class="pull-right-container">
+														              <small class="label pull-right bg-green">new</small>
+														            </span>
+															{{end}}
+														{{end}}
+														
+													</td>
                                                     <td><span class="label label-success">正常运行</span>
                                                     </td>
-                                                    <td><a href="/nodelist">5</a></td>
+                                                    <td>
+														<a href="/{{.Id}}/de/nodelist/" title="点击管理节点">
+														{{with $nodecount := Getprofornodecount .Id}}
+																{{$nodecount}}
+														{{else}}
+																无可用节点
+															
+														{{end}}
+														</a>
+													</td>
                                                     <td>
                                                         {{if(Isperitem "proe" $.uid)}}
                                                         <a class="btn" href="/proedit/{{.Id}}">
@@ -98,6 +116,12 @@
 														<i class="id" style="display:none">{{.Id}}</i>
 														</span>
 														{{end}}
+														{{if(Isperitem "cons" $.uid)}}
+                                                        <a class="btn" href="/{{.Id}}/conlist/">
+                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
+                                                        </a>
+														{{end}}
+														<i class="id" style="display:none">{{.Id}}</i>
                                                     </td>
                                                 </tr>
                                                {{end}}
@@ -133,7 +157,16 @@
                                                     <td>{{.Name}}</td>
                                                     <td><span class="label label-success">正常运行</span>
                                                     </td>
-                                                    <td><a href="/nodelist">5</a></td>
+                                                    <td>
+														<a href="/{{.Id}}/qe/nodelist/" title="点击管理节点">
+														{{with $nodecount := Getprofornodecount .Id}}
+																{{$nodecount}}
+														{{else}}
+																无可用节点
+															
+														{{end}}
+														</a>
+													</td>
                                                     <td>
                                                         {{if(Isperitem "proe" $.uid)}}
                                                         <a class="btn" href="/proedit/{{.Id}}">
@@ -149,6 +182,15 @@
 														<i class="id" style="display:none">{{.Id}}</i>
 														</span>
 														{{end}}
+														{{if(Isperitem "cons" $.uid)}}
+                                                        <a class="btn" href="/{{.Id}}/conlist/">
+                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
+                                                        </a>
+														{{end}}
+														
+														<i class="id" style="display:none">{{.Id}}</i>
+														
+														
                                                     </td>
                                                 </tr>
                                                {{end}}
@@ -218,9 +260,14 @@
 														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
-														<i class="id" style="display:none">{{.Id}}</i>
 														</span>
 														{{end}}
+														{{if(Isperitem "cons" $.uid)}}
+                                                        <a class="btn" href="/{{.Id}}/conlist/">
+                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
+                                                        </a>
+														{{end}}
+														<i class="id" style="display:none">{{.Id}}</i>
                                                     </td>
                                                 </tr>
                                                 <tr>
