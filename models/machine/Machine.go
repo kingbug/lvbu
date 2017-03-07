@@ -12,7 +12,7 @@ import (
 type Machine struct {
 	Id       uint      `orm:"pk;auto"`
 	Name     string    `orm:"size(50)"`
-	Ipaddr1  string    `orm:"size(50)"`
+	Ipaddr1  string    `orm:"size(50)"` //外网
 	Ipaddr2  string    `orm:"size(50)"`
 	Env      *env.Env  `orm:"rel(fk)"`
 	Created  time.Time `orm:"auto_now_add;type(datetime)"`

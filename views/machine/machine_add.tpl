@@ -90,10 +90,10 @@
                                     <label for="inputName" class="col-sm-2 control-label">管理接口</label>
                                     <div class="col-sm-10">                                       
                                             <label>
-                                                <input type="radio" name="interface" value="1" class="minimal" checked>内网
+                                                <input type="radio" name="interface" value="1" class="minimal">外网
                                             </label>
                                             <label>
-                                                <input type="radio" name="interface" value="2" class="minimal">外网
+                                                <input type="radio" name="interface" value="2" class="minimal"  checked>内网
                                             </label> 
 											<label>
 												<input type="text" class="form-control" id="inputName" name="port" placeholder="端口"> 

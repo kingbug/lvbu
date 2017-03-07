@@ -1,2 +1,4 @@
 conf/app.conf
 prohisconf/
+code/
+conf/*.pem

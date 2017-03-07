@@ -36,7 +36,7 @@
             <h1>编辑主机                
             </h1>
             <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i>主页</a></li>
+                <li><a href="/"><i class="fa fa-dashboard"></i>主页</a></li>
                 <li class="active">主机添加</li>
             </ol>
         </section>

@@ -22,8 +22,41 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+	<style>
+	.ms_modal {
+	    position: fixed;
+	    top: 0;
+	    right: 0;
+	    bottom: 0;
+	    left: 0;
+	    z-index: 1050;
+	    display: none;
+	    overflow: hidden;
+	    -webkit-overflow-scrolling: touch;
+	    outline: 0;
+		background: rgba(0,0,0,0.3);
+	}
+	    .imageselection {
+            cursor:pointer;
+         }
+		#fade_close {
+			float:right;
+		}
+		.full-sreen {
+			width: 100%;
+		}
+		.center {
+			position: absolute;
+		    top: 25%;
+		    left: 25%;
+		    width: 50%;
+		    height: 50%;
+		}
+    </style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<span style="display:none" class="pro_id">{{.pro.Id}}</span>
+<span style="display:none" class="env_sign">{{.env.Sign}}</span>
 <div class="wrapper">
     {{template "common/headertitle.tpl" .}}
     <!-- Left side column. contains the logo and sidebar -->
@@ -34,14 +67,14 @@
         <section class="content-header">
             <h1>
                 节点列表
-                <small><a href="/nodeadd">
+                <small><a href="/{{.pro.Id}}/{{.env.Sign}}/nodeadd">
                     <button type="button" class="btn btn-block btn-primary btn-xs">添加节点</button>
                 </a></small>
             </h1>
             <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i>主页</a></li>
-                <li><a href="#">项目列表(XX环境)</a></li>
-                <li class="active">XX项目</li>
+                <li><a href="/"><i class="fa fa-dashboard"></i>主页</a></li>
+                <li><a href="/prolist">项目列表({{.env.Name}})</a></li>
+                <li class="active">{{.proname}}项目</li>
             </ol>
         </section>
 
@@ -51,11 +84,12 @@
                 <div class="col-xs-12">
                     <div class="box">
                         <div class="box-header">
-                            <h3 class="box-title">XX项目XX环境节点列表</h3>
+                            <h3 class="box-title">项目<<b>{{.pro.Name}}</b>></h3>
+							<h4>环境<<b>{{.env.Name}}</b>></h4>
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body">
-                            <table id="example1" class="table table-bordered table-striped">
+                            <table id="nodelist" class="table table-bordered table-striped">
                                 <thead>
                                 <tr>
                                     <th>节点名称</th>
@@ -66,79 +100,37 @@
                                 </tr>
                                 </thead>
                                 <tbody>
+								{{ range Getnode .pro.Id .env.Sign}}
                                 <tr>
-                                    <td><input type="checkbox"><a href="/nodedit">接入服务1</a></td>
-                                    <td><a href="/machine">192.168.2.1</a></td>
-                                    <td>V1.0.0.1
+                                    <td><input type="checkbox"><a href="/{{$.pro.Id}}/{{$.env.Sign}}/nodedit/{{.Id}}">{{.Sign}}</a></td>
+                                    <td><a href="/macedit/{{.Mac.Id}}">{{.Mac.Ipaddr2}}</a></td>
+                                    <td>{{if .CurVer}}
+											{{.CurVer}}
+										{{else}}
+											需要初始化
+										{{end}}
                                     </td>
-                                    <td>Win 95+</td>
-                                    <td><a class="btn">
-                                        <i class="fa fa-rocket"></i>
-                                    </a>
-                                        <a class="btn">
+                                    <td class="ver">Win 95+</td>
+                                    <td class="{{.DocId}}">
+										<a class="btn rocket">
+                                        	<i class="fa fa-rocket"></i>
+                                    	</a>
+                                        <a class="btn pause">
                                             <i class="fa fa-pause"></i>
                                         </a>
-                                        <a class="btn">
+                                        <a class="btn repeat">
                                             <i class="fa fa-repeat"></i>
                                         </a>
-                                        <a class="btn">
+                                        <a class="btn trash">
                                             <i class="fa fa-trash"></i>
-                                        </a></td>
+                                        </a>
+										<i class="node_id" style="display:none">{{.Id}}</i>
+										
+									</td>
+										
                                 </tr>
-                                <td><input type="checkbox"><a href="/nodedit">接入服务2</a></td>
-                                <td><a href="/machine">192.168.2.1</a></td>
-                                <td>V1.0.0.1
-                                </td>
-                                <td>Win 95+</td>
-                                <td><a class="btn">
-                                    <i class="fa fa-rocket"></i>
-                                </a>
-                                    <a class="btn">
-                                        <i class="fa fa-pause"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-repeat"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-trash"></i>
-                                    </a></td>
-                                </tr>
-                                <td><input type="checkbox"><a href="/nodedit">接入服务3</a></td>
-                                <td><a href="/machine">192.168.2.1</a></td>
-                                <td>V1.0.0.1
-                                </td>
-                                <td>Win 95+</td>
-                                <td><a class="btn">
-                                    <i class="fa fa-rocket"></i>
-                                </a>
-                                    <a class="btn">
-                                        <i class="fa fa-pause"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-repeat"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-trash"></i>
-                                    </a></td>
-                                </tr>
-                                <td><input type="checkbox"><a href="/nodedit">接入服务4</a></td>
-                                <td><a href="/machine">192.168.2.1</a></td>
-                                <td>V1.0.0.1
-                                </td>
-                                <td>Win 95+</td>
-                                <td><a class="btn">
-                                    <i class="fa fa-rocket"></i>
-                                </a>
-                                    <a class="btn">
-                                        <i class="fa fa-pause"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-repeat"></i>
-                                    </a>
-                                    <a class="btn">
-                                        <i class="fa fa-trash"></i>
-                                    </a></td>
-                                </tr>
+								{{end}} <!--end range Getnode   -->
+                               
                                 </tbody>
                                 <tfoot>
                                 <tr>
@@ -178,8 +170,56 @@
         <!-- /.content -->
     </div>
     <!-- /.content-wrapper -->
+				<!-- 确认框 -->
+	<div class="verify-modal">
+        <div class="modal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span id="ver_break" aria-hidden="true">×</span></button>
+                <h4 class="modal-title">Default Modal</h4>
+              </div>
+              <div class="modal-body">
+                <p>One fine body…</p>
+              </div>
+              <div class="modal-footer">
+                <button id="ver_close" type="button" class=" btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button id="ver_save" type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+      </div>
+	<!-- 确认框 end -->
     {{template "common/footitle.tpl" .}}    
 </div>
+
+<!-- 实时打印信息--->
+	<div id="fade" class="ms_modal"> 
+		<div class="col-md-3 center">
+          <div class="box box-primary ">
+            <div class="box-header with-border">
+              <h3 class="box-title">Collapsable</h3>
+
+              <div id="ms_title" class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+              <!-- /.box-tools -->
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body" style="display: block;">
+              
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+	</div>
+<!--实时打印信息   end-->
 <!-- ./wrapper -->
 
 <!-- jQuery 2.2.3 -->
@@ -198,9 +238,13 @@
 <!-- AdminLTE for demo purposes -->
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
+
+
 <script>
-    $(function () {
-        $('#example1').DataTable({
+	var pro_id = $("span.pro_id").text();
+	var env_sign = $("span.env_sign").text();
+    
+    var table = $('#nodelist').DataTable({
             "paging": true,
             "lengthChange": false,
             "searching": false,
@@ -208,7 +252,150 @@
             "info": true,
             "autoWidth": false
         });
-    });
+	//加载所有可用版本
+	asdf();
+	function asdf() {
+		$.ajax({
+		url:"/jproverlist",
+		type: "post",
+		data:{
+			id: pro_id,
+		},
+		dataType: "json",
+		success: function(msg) {
+			if (msg.message == "success"){
+				console.log(msg.data);
+				loadver(msg.data); 
+				return;
+			} else {
+				alert(msg.data);
+			}
+			
+		},
+		error:function(XMLHttpRequest, textStatus, errorThrown) {
+			alert(XMLHttpRequest.status);
+			if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+				location.href="/503"
+			}
+		}
+	});
+	}
+	
+	function loadver(tags) {
+		var verlist = '<select name=\'ver\' class=\'ver\'>'
+		$.each(tags,function(n,value) {   
+			verlist = verlist + '<option value=' + value + '>' + value + '</option>';
+		});
+		verlist = verlist + '</select>';
+		$("#nodelist").children().find(".ver").html(verlist)
+	}
+	var abcc = function(){}
+	$("a.trash").click(function(){
+		var node_id = $(this).siblings("i.node_id").text();
+		var node_name = $(this).parent().siblings("td:nth-child(1)").text();
+		var node_mac = $(this).parent().siblings("td:nth-child(2)").text();
+		$(".modal").show(1000);
+		$(".modal .modal-title").text("删除节点")
+		$(".modal .modal-body").html("确定删除节点:<b>" + node_name + "</b>, 在主机:<b>" + node_mac+ "</b>");
+		var tr = $(this).parent().parent();
+		var tr_index = table.row(tr).index();
+		abcc = function() {
+			$.ajax({
+				url:"/nodedel",
+				type: "post",
+				data:{
+					node_id: node_id,
+				},
+				dataType: "json",
+				success: function(msg) {
+					if (msg.message == "success"){
+						table.row(tr_index).remove().draw( false );
+						$(".model").hide(1000);
+						return;
+					} else {
+						alert(msg.data);
+					}
+					
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alert(XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503"
+					}
+				}
+			});
+		}
+	});
+		//确认框关闭
+	$("#ver_close").click(function(){
+		$(".modal").hide(1000);
+	})
+	$("#ver_break").click(function(){
+		$(".modal").hide(1000);
+	})
+			
+	$("#ver_save").click(function(){
+		abcc();
+		$("#ver_close").click();
+	})
+	$("table#nodelist").on('click', 'td a.rocket', function(){
+		console.log("Test")
+		var ver = $(this).parent().siblings(".ver").find(".ver").val();
+		var node_id = $(this).siblings(".node_id").text();
+       
+		socket.send(node_id + ":" + ver);
+		console.log("Test2")
+	});
+	
+	//实时信息打印完毕，动态添加的关闭按钮的单击事件
+	$("div.center").on("click", "button[data-widget='remove']", function(){
+		$("div.ms_modal").hide(1000);
+	});
+	
+
+	
+	$("table#nodelist").on('click', 'td a', function(){
+		var node_id = $(this).siblings(".node_id").text();
+		var signal;
+		if ($(this).hasClass("repeat")) {
+			signal = "RESTART"
+		} else if ($(this).hasClass("pause")) {
+			signal = "STOP"
+		} else if ($(this).hasClass("play")) {
+			signal = "START"
+		} else {
+			return;
+		}
+		$.ajax({
+			url:"/jnodeopera",
+			type: "post",
+			data:{
+				id: node_id,
+				env_sign: env_sign,
+				signal: signal,
+			},
+			dataType: "json",
+			success: function(msg) {
+				if (msg.message == "success"){
+					console.log(msg.data);
+					alert(msg.data);
+					return;
+				} else {
+					alert(msg.data);
+				}
+				
+			},
+			error:function(XMLHttpRequest, textStatus, errorThrown) {
+				alert(XMLHttpRequest.status);
+				if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+					location.href="/503"
+				}
+			}
+		});
+	});
+
 </script>
+<!-- deploy websocket 务必放到最后面--> 
+<script src="/static/js/deployws.js"></script>
 </body>
 </html>

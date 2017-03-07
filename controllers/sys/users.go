@@ -247,6 +247,7 @@ func (c *UserController) EditPost() {
 		}
 		user.Id = uid
 		user.Created = copyuser.Created
+		user.Avatar = copyuser.Avatar
 		err = user.Update()
 		if err != nil {
 			c.Data["message"] = "修改用户资料户失败:" + err.Error() + message

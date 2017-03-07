@@ -26,7 +26,7 @@ func (c *MacController) Add() {
 		c.TplName = "machine/machine_add.tpl"
 	} else if c.Ctx.Request.Method == "POST" {
 		name := c.GetString("name")
-		ipaddr1 := c.GetString("ipaddr1") //
+		ipaddr1 := c.GetString("ipaddr1") //外网IP
 		ipaddr2 := c.GetString("ipaddr2") //内， 外网两选 一
 		port, err := c.GetInt("port")
 		interf := c.GetString("interface")

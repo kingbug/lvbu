@@ -22,6 +22,40 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+	
+	<style>
+        .white_content{
+            display:none;
+            position: absolute;
+            top: 25%;  left: 25%;
+            width: 50%;  height: 50%;
+            padding: 16px;  border: 4px solid rgba(66, 62, 74, 0.43);
+            background-color: white;  z-index:1002;  overflow: auto;
+        }
+         .black_overlay{
+             display: none;
+             position: absolute;
+             top: 0%;  left: 0%;
+             width: 100%;  height: 100%;
+             background-color: black;  z-index:1001;  -moz-opacity: 0.8;  opacity:.80;  filter: alpha(opacity=80);
+         }
+         .imageselection {
+            cursor:pointer;
+         }
+		#fade_close {
+			float:right;
+		}
+		.full-sreen {
+			width: 100%;
+		}
+		.center {
+			position: absolute;
+		    top: 25%;
+		    left: 25%;
+		    width: 50%;
+		    height: 50%;
+		}
+    </style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -39,8 +73,8 @@
                 </small>
             </h1>
             <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i>主页</a></li>
-                <li><a href="#">XX项目(XX环境)</a></li>
+                <li><a href="/"><i class="fa fa-dashboard"></i>主页</a></li>
+                <li><a href="/{{.node.Pro.Id}}/{{.node.Mac.Env.Sign}}/nodelist">{{.node.Pro.Name}}({{.node.Mac.Env.Name}})</a></li>
                 <li class="active">节点编辑</li>
             </ol>
         </section>
@@ -51,52 +85,67 @@
                 <div class="col-md-12">
                     <div class="box">
                         <div class="box-header">
-                            <h3 class="box-title">XX项目XX环境XX节点</h3>
+                            <h3 class="box-title">项目<<b>{{.node.Pro.Name}}</b>></h3>
+							<h4>环境<<b>{{.node.Mac.Env.Name}}</b>></h4>
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body">
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" action="" method="post">
+								<input type="text" style="display:none" name="mirror" value="{{.node.Mir.Id}}"/>
                                 <div class="form-group">
-                                    <label for="inputName" class="col-sm-2 control-label">节点ID</label>
+                                    <label for="inputName" class="col-sm-2 control-label">容器ID</label>
 
                                     <div class="col-sm-10">
-                                        asfdasfadsf111111
+                                        {{if .node.DocId}}
+											{{.node.DocId}}
+										{{else}}
+											未初始化
+										{{end}}
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">所属环境</label>
 
                                     <div class="col-sm-10">
-                                        运维环境
+										<select class="form-control select2" name="machine" data-placeholder="选择主机"style="width: 100%;">
+                                            <option value="{{.node.Mac.Env.Id}}">{{.node.Mac.Env.Name}}</option>
+											{{range .macs}}
+												<option value="{{.Id}}">{{.Ipaddr2}}</option>
+											{{end}}
+                                        </select>
+                                        
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">隶属主机</label>
 
                                     <div class="col-sm-10">
-                                        <a href="/machine">192.168.2.1</a>
+                                        <a href="/machine">{{.node.Mac.Ipaddr2}}</a>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">节点别名</label>
 
                                     <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="inputName" placeholder="用于标识节点唯一性">
+                                        <input type="text" class="form-control" id="inputName" name="sign" value="{{.node.Sign}}" placeholder="用于标识节点唯一性">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputExperience" class="col-sm-2 control-label">端口映射</label>
 
                                     <div class="col-sm-10">
-                                        <textarea class="form-control" id="inputExperience"
-                                                  placeholder="逗号分隔(英文!!)，如80:80,90:90"></textarea>
+                                        <textarea class="form-control" id="inputExperience" name="port"
+                                                  placeholder="逗号分隔(英文!!)，如80:80,90:90">{{.node.Port}}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">引用镜像:</label>
                                     <div class="col-sm-10">
-                                        <a href="/mirror">J2EE TOMCAT1.7</a>
-                                    </div>
+                                            <span id="imageselection_id" class="imageselection btn" style="color:#3c8dbc;" title="点击选择">
+                                                {{.node.Mir.Name}}
+                                            </span>
+
+                                        </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">cpu:</label>
@@ -115,6 +164,12 @@
                                 <div class="form-group">
                                     <div class="col-sm-offset-2 col-sm-10">
                                         <button type="submit" class="btn btn-danger">Submit</button>
+										{{if .message}}
+											<div class="form-group has-error">
+							                  <label class="control-label" for="inputError"><i class="fa fa-times-circle-o"></i> {{.message}}</label>
+							                 
+							                </div>
+										{{end}}
                                     </div>
                                 </div>
                             </form>
@@ -128,6 +183,57 @@
     </div>
     {{template "common/footitle.tpl" .}}
 </div>
+<!--        添加节点弹窗---start---->
+<div id="fade" class="black_overlay"></div> <!-- 半透明不可操作 -->
+    <div class="white_content">
+        <div class="pull-right box-tools full-sreen">
+            <!-- button with a dropdown -->
+            <div class="btn-group full-sreen">
+			
+            <table id="example1" class="table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+				{{range $i, $v := Getmirgroup}}
+				<thead>
+               		<tr role="row">
+						<th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="3" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width: 290px;text-align: center;">{{$v.Name}}:</th>
+					</tr>
+					
+				</thead>
+				<tbody>
+					
+	               <tr role="row" class="odd">
+						{{range $index, $val := Getmir $v.Id}}
+							{{if Seek $index 3}}
+								 <td width="33%" title="{{$val.Hubaddress}}">
+										<input name="imagename"  type="radio" value="{{$val.Id}}" /><span>{{$val.Name}}</span>
+								</td>
+							{{else}}	
+								</tr>
+								<tr role="row" class="odd">
+								<td width="33%" title="{{$val.Hubaddress}}">
+										<input name="imagename"  type="radio" value="{{$val.Id}}" /><span>{{$val.Name}}</span>
+								</td>
+							{{end}}
+						{{end}}
+	               </tr>
+					
+				</tbody>
+               	{{end}}
+				<thead><!-- 添加按钮 -->
+               			<tr role="row"><th class="" tabindex="0" aria-controls="example1" rowspan="1" colspan="3" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width: 290px; text-align: center;">
+							<button id="addimage" type="button" class="btn btn-default pull-right"><i class="fa fa-plus"></i> Add </button>
+						</th></tr>
+               		</thead>
+
+               
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!--        添加节点弹窗---end------>
 <!-- ./wrapper -->
 
 <!-- jQuery 2.2.3 -->
@@ -147,4 +253,45 @@
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
 </body>
+
+<script>
+		var imagename1 ;
+        //点击显示选择镜像
+        var cont_view = true;
+       $("#imageselection_id").click(function(){
+			
+           if (cont_view){
+               $(".white_content").show();
+               $(".black_overlay").show();
+
+               cont_view = false;
+           }else {
+               $(".white_content").hide();
+               $(".black_overlay").hide();
+               cont_view = true;
+           }
+       });
+
+ 
+		$("#addimage").click(function(){
+			imagename1 = $("input:radio[name='imagename']:checked + span").text() ;
+			if (imagename1 == ""){
+				alert("镜像不能为空");
+				return;
+			}
+			image = $("input:radio[name='imagename']:checked").val();
+			$("#imageselection_id").text(imagename1);
+			$("form.form-horizontal").find("input[name='mirror']").val(image);
+			if (cont_view){
+              $(".white_content").show();
+              $(".black_overlay").show();
+
+              cont_view = false;
+			}else {
+			    $(".white_content").hide();
+			    $(".black_overlay").hide();
+			    cont_view = true;
+			}
+			});
+</script>
 </html>

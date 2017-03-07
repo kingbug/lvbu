@@ -65,3 +65,11 @@ func (m *Mirror) Delete() error {
 func (m *Mirror) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
 }
+
+func Getmir(groupid uint) ([]*Mirror, error) {
+	var mirs []*Mirror
+	if _, err := new(Mirror).Query().Filter("Mirrorgroup__Id", groupid).All(&mirs); err != nil {
+		return mirs, err
+	}
+	return mirs, nil
+}

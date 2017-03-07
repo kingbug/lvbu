@@ -5,4 +5,5 @@ func init() {
 	Inithandle()
 	InitTemplate()
 	InitCache()
+	InitDocker()
 }

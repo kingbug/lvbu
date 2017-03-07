@@ -4,6 +4,7 @@ import (
 	ctl "lvbu/controllers"
 	mper "lvbu/models/permission"
 	mpro "lvbu/models/project"
+	"lvbu/utils"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -210,4 +211,26 @@ func (c *ProController) Del() {
 		c.ServeJSON()
 		return
 	}
+}
+
+func (c *ProController) Verlist() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+	if !mper.Isperitem("pros", uid) { //项目[管理|查看](pros)
+		beego.Debug("动作:请求项目列表,权限验证失败")
+		c.Abort("503")
+	}
+	var pro mpro.Project
+	id, _ := c.GetUint16("id")
+	pro.Id = uint(id)
+	if err := pro.Read(); err != nil {
+		beego.Error("动作:数据库操作,查询项目出错:", err)
+		c.Data["json"] = map[string]interface{}{"message": "error", "data": err.Error()}
+		c.ServeJSON()
+		return
+	}
+	tags := utils.GitTags(pro.Git)
+	c.Data["json"] = map[string]interface{}{"message": "success", "data": tags}
+	c.ServeJSON()
+	return
 }

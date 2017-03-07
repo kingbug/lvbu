@@ -32,10 +32,15 @@ func init() {
 	beego.Router("/proedit/:id([0-9]+)", &project.ProController{}, "*:Edit")
 	beego.Router("/proadd", &project.ProController{}, "*:Add")
 	beego.Router("/prodel", &project.ProController{}, "post:Del")
+	beego.Router("jproverlist", &project.ProController{}, "post:Verlist")
 	//节点
 	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodelist", &node.NodeController{}, "*:List")
-	beego.Router("/nodedit", &node.NodeController{}, "*:Edit")
-	beego.Router("/nodeadd", &node.NodeController{}, "*:Add")
+	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodedit/:id([0-9]+)", &node.NodeController{}, "*:Edit")
+	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodeadd", &node.NodeController{}, "*:Add")
+	beego.Router("/nodedel", &node.NodeController{}, "post:Del")
+	beego.Router("/ws/nodeadd", &node.NodeController{}, "get:Wsadd")
+	beego.Router("/ws/nodedeploy", &node.NodeController{}, "get:Wsdeploy")
+	beego.Router("/jnodeopera", &node.NodeController{}, "post:Jnodeopera")
 	//主机
 	beego.Router("/maclist", &machine.MacController{}, "*:List")
 	beego.Router("/macedit/:id([0-9]+)", &machine.MacController{}, "*:Edit")

@@ -32,6 +32,6 @@ func InitSql() {
 	//orm.RegisterDataBase("default", "mysql", "root:@/blog?charset=utf8", 30)
 	orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&loc=Local", user, passwd, host, port, dbname))
 	//orm.RegisterDataBase("default", "mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8", user, passwd, host, port, dbname))
-	orm.RegisterModelWithPrefix(prefix, new(mir.Mirrorgroup), new(mir.Mirror), new(mur.User), new(mur.Position), new(men.Env), new(mcn.Config), new(mcn.Configver), new(mac.Machine), new(mper.Permenu), new(mper.Peritem), new(mpro.Project))
+	orm.RegisterModelWithPrefix(prefix, new(mir.Mirrorgroup), new(mir.Mirror), new(mur.User), new(mur.Position), new(men.Env), new(mcn.Config), new(mcn.Configver), new(mac.Machine), new(mper.Permenu), new(mper.Peritem), new(mpro.Project), new(mpro.Node))
 
 }

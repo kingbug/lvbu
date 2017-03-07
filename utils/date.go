@@ -5,6 +5,22 @@ import (
 	"time"
 )
 
+type EventType int
+
+const (
+	EVENT_STAT = iota
+	EVENT_ERROR
+	EVENT_MESSAGE
+)
+
+type Event struct {
+	Type           EventType
+	Message        string
+	Containerid    string
+	Containerstats bool
+	Error          string
+}
+
 /*
 func GetDate(timestamp int64) string {
 	tm := time.Unix(timestamp, 0)

@@ -4,6 +4,7 @@ import (
 	"lvbu/models/env"
 	men "lvbu/models/env"
 	mac "lvbu/models/machine"
+	mir "lvbu/models/mirror"
 	mper "lvbu/models/permission"
 	mpro "lvbu/models/project"
 	"lvbu/models/user"
@@ -28,6 +29,9 @@ func InitTemplate() {
 	beego.AddFuncMap("Getproject", mpro.Getproject)
 	beego.AddFuncMap("Getprofornodecount", mpro.Getprofornodecount)
 
+	beego.AddFuncMap("Getmirgroup", mir.Getmirgroup)
+	beego.AddFuncMap("Getmir", mir.Getmir)
+
 	beego.AddFuncMap("Getnode", mpro.Getnode)
 	//	beego.AddFuncMap("getProjectname", projects.GetProjectName)
 	//	beego.AddFuncMap("getLeaveProcess", leaves.ListLeaveApproverProcessHtml)
@@ -37,6 +41,7 @@ func InitTemplate() {
 	//	beego.AddFuncMap("getOagoodProcess", oagoods.ListOagoodApproverProcessHtml)
 	//	beego.AddFuncMap("getOvertimeProcess", overtimes.ListOvertimeApproverProcessHtml)
 
+	beego.AddFuncMap("Seek", utils.Seek)
 	beego.AddFuncMap("getDate", utils.GetDate)
 	beego.AddFuncMap("getDateMH", utils.GetDateMH)
 	//beego.AddFuncMap("getNeedsStatus", utils.GetNeedsStatus)

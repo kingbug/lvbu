@@ -63,3 +63,11 @@ func (m *Mirrorgroup) Delete() error {
 func (m *Mirrorgroup) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
 }
+
+func Getmirgroup() ([]*Mirrorgroup, error) {
+	var mirs []*Mirrorgroup
+	if _, err := new(Mirrorgroup).Query().All(&mirs); err != nil {
+		return mirs, err
+	}
+	return mirs, nil
+}

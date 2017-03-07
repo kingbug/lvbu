@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 
 	"net/smtp"
@@ -102,4 +103,52 @@ func SnowFlakeId() int64 {
 	} else {
 		return id
 	}
+}
+
+func Seek(a, b int) int {
+	return a % b
+}
+
+func Gittoname(giturl string) string {
+	end := strings.LastIndex(giturl, ".")
+	start := strings.LastIndex(giturl, "/")
+	if start == -1 || end == -1 {
+		return ""
+	}
+	return giturl[start+1 : end]
+}
+
+//example: 80:90, 88:89 返回90, 89
+func GetPortList(port string) []string {
+	buf_port := strings.Split(port, ",")
+	var tmp_port []string
+	for _, v := range buf_port {
+		v = strings.Replace(v, " ", "", -1)
+		v = strings.Replace(v, "\n", "", -1)
+		tmp_port = append(tmp_port, strings.Split(v, ":")[1])
+	}
+	return tmp_port
+}
+
+//example: 80:90, 88:89 返回map["80"]{"90"},["88"]{"89"}
+func Getportmap(port string) (map[string]string, error) {
+	buf_port := strings.Split(port, ",")
+	beego.Debug("buf_port(len):", len(buf_port))
+	var tmp_port = make(map[string]string)
+	for k, v := range buf_port {
+		beego.Debug("k", k)
+		v = strings.Replace(v, " ", "", -1)
+		v = strings.Replace(v, "\n", "", -1)
+		tmp_pairs := strings.Split(v, ":")
+		beego.Debug("tmp_paris(len):", len(tmp_pairs), "value:", tmp_pairs)
+		if len(tmp_pairs) != 2 {
+			return make(map[string]string), errors.New(port + "格式错误")
+		}
+		beego.Debug(tmp_pairs[0], ",", tmp_pairs[1])
+		key := strings.Replace(strings.Replace(tmp_pairs[0], " ", "", -1), "\n", "", -1)
+		value := strings.Replace(strings.Replace(tmp_pairs[1], " ", "", -1), "\n", "", -1)
+
+		tmp_port[key] = value
+	}
+	return tmp_port, nil
 }

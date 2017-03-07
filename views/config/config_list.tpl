@@ -27,6 +27,8 @@
 		padding:3px;
 		vertical-align: initial; 
 		font-size: 18px;
+		max-width: 550px;
+		overflow:hidden; /* 内容超出宽度时隐藏超出部分的内容 */ 
 	}
 	.input-h-w {
 		height:38px;
@@ -485,10 +487,22 @@
 <!-- page script -->
 <script>
 
-    var table1 = $('#de').DataTable();
-    var table2 = $('#qe').DataTable();
-    var table3 = $('#oe').DataTable();
-	var table4 = $('#dd').DataTable();
+    var table1 = $('#de').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
+    var table2 = $('#qe').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
+    var table3 = $('#oe').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
+	var table4 = $('#oo').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
 	
 	
 	$(".rm_pro").click(function(){

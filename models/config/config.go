@@ -12,9 +12,9 @@ type Config struct {
 	Id          uint          `orm:"pk;auto"`
 	Name        string        `orm:"size(50)"`
 	Description string        `orm:"size(200)"`
-	Dvalue      string        `orm:"size(200)"`
-	Tvalue      string        `orm:"size(200)"`
-	Ovalue      string        `orm:"size(200)"`
+	Dvalue      string        `orm:"type(text)"`
+	Tvalue      string        `orm:"type(text)"`
+	Ovalue      string        `orm:"type(text)"`
 	Dtstatus    int           `orm:column(默认0无状态,1为已修改,2,3为已删除)`
 	Tostatus    int           `orm:column(默认0无状态,1为已修改,3为已删除)`
 	Pro         *mpro.Project `orm:"rel(fk)"`

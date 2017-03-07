@@ -5,6 +5,7 @@ import (
 	mcn "lvbu/models/config"
 	mper "lvbu/models/permission"
 	mpro "lvbu/models/project"
+	"lvbu/utils"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -314,12 +315,18 @@ func (c *ConController) Download() {
 	filetype := c.GetString("filetype")
 	env := c.GetString("env")
 	version := c.GetString("version")
+	line := c.GetString("line")
 	if pro != "" && filetype != "" && env != "" && version != "" {
 		filename := "prohisconf/" + pro + "_" + env + "_" + version + "_" + filetype + ".conf"
-		c.Ctx.Output.Download(filename)
+		file, err := utils.GetConf(pro, env, version, filetype, line)
+		if err != nil {
+			c.Data["data"] = err.Error()
+		}
+
+		c.Data["data"] = string(file.Bytes()[:])
 		beego.Info("配置文件下载:" + filename)
 	} else {
 		beego.Info("配置文件下载,缺少参数")
-		return
 	}
+	c.TplName = "common/blank.tpl"
 }
