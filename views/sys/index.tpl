@@ -46,7 +46,7 @@
                 <p class="intro">服务于应用的完整生命周期</p>
                 <div class="tryBtnBox">
                   <div class="tryBtn">
-                    <a href="https://console.tenxcloud.com/login">
+                    <a href="/login">
                       <span>立即体验</span>
                     </a>
                   </div>
