@@ -1,6 +1,8 @@
 #LVBU
 ##首次运行
 在app.conf里面配置的mysql主机上面执行:
+
+
 	root@localhost:~#mysql -u username -p
 	mysql>create lvbu;
 	mysql>exit;
