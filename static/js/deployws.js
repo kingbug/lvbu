@@ -1,6 +1,7 @@
 var socket;
 var ms_modal_contr = false //实时信息打印框控制值，false 为隐藏
 var deadcontainers = [];  //存放状态为停止的容器的列表.如为false 淡黄色闪烁提醒
+var _interval ;//定时器
 $(document).ready(function () {
     // Create a socket
 //    socket = new WebSocket('ws://' + window.location.host + '/ws/join?uname=' + $('#uname').text());
@@ -46,20 +47,21 @@ $(document).ready(function () {
 				$(".ms_modal").show(1000);
 				ms_modal_contr = true;
 			}
-            $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + '<span style=\'color:red;\'>' + data + '</span><br/>')
+            $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + '<span style=\'color:red;\'>' + data.Error + '</span><br/>')
             break;
         case 2: // EVENT_MESSAGE
 			if (ms_modal_contr == false){
 				$(".ms_modal").show(1000);
 				ms_modal_contr = true;
 			}
-            $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + data + '<br/>')
+            $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + data.Message + '<br/>')
             break;
         }
 
     };
 	socket.onclose = function (event) {
 		console.log("socket closed");
+		clearInterval(_interval);
 	}
 
     // Send messages.
@@ -83,5 +85,5 @@ $(document).ready(function () {
 	}
 	
 	
-    setInterval(flash, 500);
+    _interval = setInterval(flash, 500);
 });

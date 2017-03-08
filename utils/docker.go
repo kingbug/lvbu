@@ -405,6 +405,7 @@ func Clilistcons(adminurl string) ([]docker.APIContainers, error) {
 func Cliinspectcon(nodes []*mpro.Node) ([]*docker.Container, error) {
 
 	c := make([]*docker.Container, len(nodes))
+	errindex := 0
 	for k, node := range nodes {
 		endpoint := "tcp://" + node.Mac.Adminurl
 		client, err := docker.NewClient(endpoint)
@@ -412,12 +413,18 @@ func Cliinspectcon(nodes []*mpro.Node) ([]*docker.Container, error) {
 			beego.Error("连接客户端", node.Mac.Adminurl, ",", err)
 			return c, err
 		}
+		if node.DocId == "" {
+			beego.Debug("该节点未初始化,node:", node.Name)
+			errindex = errindex + 1 //如果这个错误索引的话，在调用遍历 c 时，会抛空指针异常的
+			continue
+		}
 		container, err := client.InspectContainer(node.DocId)
 		if err != nil {
 			beego.Error("获取容器列表出错跳过", node.Mac.Adminurl, ",", err)
+			errindex = errindex + 1 //如果这个错误索引的话，在调用遍历 c 时，会抛空指针异常的
 			continue
 		}
-		c[k] = container
+		c[k-errindex] = container
 	}
 	if len(c) < 1 {
 		return c, errors.New("容器列表长度为零，请通知管理员,这并不是一个BUG")

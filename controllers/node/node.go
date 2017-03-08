@@ -303,54 +303,78 @@ func (c *NodeController) Wsdeploy() {
 		beego.Error("Cannot setup Websocket connection:", err)
 		return
 	}
+	var exitstats = make(chan bool)
 	go func() { //循环检测节点容器状态
 		var nodes []*mpro.Node
 		if _, err := new(mpro.Node).Query().Filter("Pro__Id", proid).All(&nodes); err != nil {
 			beego.Error("查询数据库出错", err)
-		} else {
+		} else if len(nodes) > 0 {
 			for _, node := range nodes {
 				if err := node.Mac.Read(); err != nil {
 					beego.Error("查询节点所属主机出错", err)
 				}
 			}
+		DONE:
 			for {
-				containers, err := utils.Cliinspectcon(nodes)
-				if err != nil {
-					mes := "检测节点状态出错"
-					var buf bytes.Buffer
-					buf.WriteString(mes)
-					if ws.WriteMessage(websocket.TextMessage, buf.Bytes()) != nil {
+
+				select {
+				case code := <-exitstats:
+					if code {
+						beego.Debug("退出状态检测")
+						break DONE
 					}
-					break
-				}
-				for _, value := range containers {
-					event := utils.Event{
-						Type:           utils.EVENT_STAT,
-						Containerid:    value.ID,
-						Containerstats: value.State.Running,
-					}
-					data, err := json.Marshal(event)
+				default:
+					containers, err := utils.Cliinspectcon(nodes)
 					if err != nil {
-						beego.Error("Fail to marshal event:", err)
-						return
+						mes := "检测节点状态出错"
+						var buf bytes.Buffer
+						buf.WriteString(mes)
+						if err := ws.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
+							beego.Error("发送websocket出错:", err)
+							break DONE
+						}
+						break DONE
 					}
-					if ws.WriteMessage(websocket.TextMessage, data) != nil {
+					beego.Debug("containers.len:", len(containers))
+					for _, value := range containers {
+						if value == nil {
+							beego.Info("空对象")
+							continue
+						}
+						event := utils.Event{
+							Type:           utils.EVENT_STAT,
+							Containerid:    value.ID,
+							Containerstats: value.State.Running,
+						}
+						data, err := json.Marshal(event)
+						if err != nil {
+							beego.Error("Fail to marshal event:", err)
+							continue
+						}
+						if ws.WriteMessage(websocket.TextMessage, data) != nil {
+						}
 					}
+					time.Sleep(5 * time.Second)
 				}
-				time.Sleep(5 * time.Second)
+
 			}
 		}
 
 	}()
 
+RECEIVE:
 	//tmp_ms: example 90:v8.8.8
 	for {
 		mt, tmp_ms, _ := ws.ReadMessage()
 		beego.Debug("messageType:", mt)
 		beego.Debug("message:", tmp_ms)
 		if mt == -1 {
-			ws.Close()
-			return
+			beego.Debug("正在尝试关闭当前websocket连接")
+			exitstats <- true //控制检测节点状态for退出
+			if err := ws.Close(); err != nil {
+				beego.Info("关闭websocket连接出错：", err)
+			}
+			break RECEIVE
 		}
 		buf_ms := strings.Split(string(tmp_ms), ":")
 		node_id := buf_ms[0]
@@ -478,11 +502,10 @@ func (c *NodeController) Wsdeploy() {
 				beego.Error("message 循环已退出0")
 				break
 			}
-
 		}
 		beego.Info("message 循环已退出00")
 	}
-
+	beego.Info("websocket 函数体退出")
 }
 
 func (c *NodeController) Jnodeopera() {
