@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"lvbu/controllers"
+	//	"lvbu/controllers"
 	"lvbu/controllers/config"
 	"lvbu/controllers/env"
 	"lvbu/controllers/machine"
@@ -16,7 +16,8 @@ import (
 )
 
 func init() {
-	beego.Router("/", &controllers.MainController{})
+	//beego.Router("/", &controllers.MainController{})
+	beego.Router("/", &user.UserLoginController{}, "get:Get;post:Post")
 	//用户
 	beego.Router("/login", &user.UserLoginController{}, "get:Get;post:Post")
 	beego.Router("/index", &user.UserController{}, "*:Index")

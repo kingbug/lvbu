@@ -110,7 +110,7 @@
 		                                                    <td title="KEY不能修改，如必须修改，可以删除后，再添加" class="key">
 																{{.Name}}
 															</td>
-		                                                    <td title="双击编辑" class="value">
+		                                                    <td title="双击编辑,再次双击还原修改" class="value">
 																{{.Dvalue}}
 		                                                    </td>
 															<td>
@@ -185,7 +185,7 @@
 	                                                    <td title="KEY不能修改，如必须修改，可以删除后，再添加" class="key">
 															{{.Name}}
 														</td>
-	                                                    <td title="双击编辑" class="value">
+	                                                    <td title="双击编辑,再次双击还原修改" class="value">
 															{{if .Tvalue}}
 																{{.Tvalue}}
 															{{else}}
@@ -256,7 +256,7 @@
 	                                                    <td title="KEY不能修改，如必须修改，可以删除后，再添加" class="key">
 															{{.Name}}
 														</td>
-	                                                    <td title="双击编辑" class="value">
+	                                                    <td title="双击编辑,再次双击还原修改" class="value">
 															{{if .Ovalue}}
 																{{.Ovalue}}
 															{{else}}
@@ -333,7 +333,7 @@
 														<td title="KEY不能修改">
 															{{.Name}}
 														</td>
-														<td class="value" title="{{.Description}}">
+														<td class="" title="{{.Description}}"><!--开发环境只能在开发页面修改-->
 														{{if lt .Dtstatus 2}}
 															{{.Dvalue}}
 															{{ if .Dtstatus }}
@@ -348,7 +348,7 @@
 															<td class="qe">
 																{{if(Isperitem "cone" $.uid)}}
 																	{{if .Dtstatus}}
-																		<span class="sync btn open" title="同步:把测试环境同步到生产环境">
+																		<span class="sync btn open" title="同步:把开发环境同步到测试环境">
 					                                                            <i class="fa fa-share"></i>
 																		</span>
 																		<span class="ignore btn open" title="忽略:忽视此KEY的更改">
@@ -583,16 +583,20 @@
 		'<input class=\" input-h-w form-control\" style="width:100%;" type=\"text\" name=\"value\"/>',
 		'<input class=\" input-h-w form-control\" style="width:100%;" type=\"text\" name=\"description\"/>',
 		edit
-		]).draw();
+		]).draw( false );
 		
 		$("table tr:eq(1)").find("td:eq(1)").addClass("value");
 	})
 	//双击td
 	var inputpla = "";//和保存按钮通信值，存放input 的placeholder
 	var tdinputcontr = false;  //标识是否有正在修改的配置项
+	var isnew = false;		   //当前编辑td 是否 new
 	$("table tbody").on('dblclick','td', function(){
 		if (inputpla == $(this).find("input").attr("placeholder")){ //第二次双击可还原
-			$(this).text($(this).find("input").attr("placeholder"))
+			$(this).text(inputpla);
+			if (isnew == true){
+				$(this).html($(this).html() + "<small class=\"label pull-right bg-green\">new</small>");
+			}
 			tdinputcontr = false;
 			tr_obj = $(this).parent();
 			if (tr_obj.find("span.save").hasClass('open')) {
@@ -600,7 +604,7 @@
 				tr_obj.find("span.save").addClass('disabled')
 			}
 			$(this).removeClass('select');
-			inputpla = ""
+			inputpla = "";
 			return;
 		}
 		if ($(this).hasClass('select')) {
@@ -625,9 +629,16 @@
 		}
 		$(this).addClass("select");
 		tdinputcontr = true;
-		var value = $.trim($(this).text());
-		inputpla = value
-		$(this).html('<input class=\" input-h-w form-control\" style="width:100%;" type=\"text\" name=\"value\" placeholder=\"' + value + '\"/>');
+		if ($(this).find("small").length>0){
+			isnew = true;
+		} else {
+			isnew = false;
+		}
+		$(this).find("small").remove();
+		var value = $.trim($(this).text()); //获取当前TD text
+		//value = value.substring(0,value.length-4);
+		inputpla = value;
+		$(this).html('<input class=\" input-h-w form-control\" style="width:100%;" type=\"text\" name=\"value\" value=\"' + value + '\" placeholder=\"' +inputpla +'\"/>');
 
 	});
 	
@@ -652,7 +663,7 @@
 		}
 	}
 	
-	//保存按钮可用和不可用切换
+	//点击保存按钮可用和不可用切换
 	function switch_save( tr_obj ) {
 		if (tr_obj.find("span.save").hasClass('open')) {
 			tr_obj.find("span.save").removeClass('open')
@@ -667,8 +678,10 @@
 		if ($(this).hasClass('disabled')){
 			return;  //
 		}
+
 		var pro_id  = $("body span#pro_id").text();
 		var conf_id = $(this).siblings("i.id").text();
+		var td = $(this).parent();
 		var tr = $(this).parent().parent();
 		var value = tr.find("input[name='value']").val();
 		if (typeof(value) == "undefined") {return;}  //value 所在td 不是input 状态，直接返回
@@ -678,6 +691,9 @@
 			key = tr.find("td:eq(0)").text()
 		}
 		var td_index = $(this).parent().index();
+		var table_id = $(this).parent().parent().parent().parent().attr("id");
+		var previous_td_index = td_index - 1;
+		var previous_td = $(this).parent().parent().find("td:nth-child(" + previous_td_index + ")");
 		var env_sign;
 		var tmp_env_sign = $(this).parent().parent().parent().parent().attr("id");
 		if (tmp_env_sign=="oo") { //如果在汇总页面，那标识 就取当前td 的class属性值
@@ -693,14 +709,20 @@
 				data:{pro_id: pro_id, key: key, value: value, sign: env_sign, description: description},
 				dataType: "json",
 				success: function(msg) {
-					if (msg == "success"){
+					if (msg.message == "success"){
 						inputtotd(tr);
 						tr.find("td:eq(1)").removeClass("select");
 						switch_save(tr);		//切换保存状态
 						tdinputcontr = false;  //解锁编辑状态
+						console.log("table_id=" + table_id);
+						console.log("previous_td_index=" + previous_td_index);
+						if (table_id == "de") {  //是否是开发环境div
+							previous_td.addClass("value");//开发环境 td添加value  class
+							td.find("i.pro_id").addClass("id").removeClass("pro_id").text(msg.confid);
+						}
 						return;
 					} else {
-						alert(msg);
+						alert(msg.error);
 					}
 					
 				},
@@ -754,28 +776,43 @@
 	$("table tbody").on('change','input', function(){
 		var td = $(this).parent();
 		var tr = $(this).parent().parent();
-		var td_index = $(this).parent().parent().find("td").index(td)
+		var td_index = $(this).parent().index();
 		var this_value = $.trim($(this).val());
+		var table_id = $(this).parent().parent().parent().parent().attr("id");
+		th_index = td_index + 1;
 		if (this_value == ""){
 			return;
 		}
 		var bro_input;
-		if (td_index == 0){
-			bro_input = tr.find("input[name='value']").val()
-		} else if (td_index == 1){
-			bro_input = tr.find("input[name='key']").val()
+		if (td_index == 1 || td_index == 2 || td_index == 0){
+			bro_input = tr.find("input[name='key']").val();
+			
 		}
 		if (bro_input==""){
+			tr.find("td span.save").removeClass("open");
+			tr.find("td span.save").addClass("disabled");
 			return;
 		}
-		tr.find("span.save").removeClass("disabled");
-		tr.find("span.save").addClass("open");
+		//var td_span = td_index + 2;
+		if (table_id == "oo") {
+			tr.find("td:nth-child("+td_index+") span.save").removeClass("disabled");
+			tr.find("td:nth-child("+td_index+") span.save").addClass("open");
+		} else {
+			tr.find("td span.save").removeClass("disabled");
+			tr.find("td span.save").addClass("open");
+		}
+		
 		sync_i = tr.find("span.sync").find("i.fa-share"); //同步按钮变保存
 		sync_i.removeClass("fa-share");
 		sync_i.addClass("fa-save");
 		sync_span = tr.find("span.sync");
 		sync_span.removeClass("sync");
 		sync_span.addClass("save open");
+		if (table_id == "oo"){
+			
+			var table_thead_tr_th_text = tr.parent().siblings("thead").find("tr th:nth-child("+th_index+")").text();
+			tr.find("td:nth-child("+td_index+") span.save").attr("title","保存 : 保存" + table_thead_tr_th_text + "修改");//更改span 元素提示
+		}
 		
 	})
 	

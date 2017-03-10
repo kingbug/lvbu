@@ -78,6 +78,36 @@
 										</label>
 									{{end}}
                                 </div>
+								
+								<div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">代码标识</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control select2" name="compile" style="width: 100%;">
+											{{range $k, $v := Compilemap}}
+												{{if $.pro.Compile}}
+													{{if eq $.pro.Compile $v}}
+														<option value="{{$k}}"  selected = "selected">{{$v}}</option>
+													{{else}}
+														<option value="{{$k}}">{{$v}}</option>
+													{{end}}
+												{{else}}
+													<option value="{{$k}}">{{$v}}</option>
+												{{end}}
+											{{end}}
+                                            
+                                        </select>
+                                    </div>
+									{{if .complieerr}}
+										<lable style="margin-left:18%;">
+												<small class="label label-danger"> {{.complieerr}}</small>
+										</label>
+									{{else}}
+										<lable style="margin-left:18%; display:none;" class="complieerr">
+												<small class="label label-danger"></small>
+										</label>
+									{{end}}
+                                </div>
+								
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">仓库地址</label>
                                     <div class="col-sm-10">
@@ -177,7 +207,7 @@
 <script>
     $(function () {
         //Initialize Select2 Elements
-        $(".select2").select2();
+       // $(".select2").select2();
     });
 	
 	function toVaild() {

@@ -18,21 +18,49 @@ import (
 var (
 	dockerbin      string
 	dockerregsitry string
+	antbin         string
+	configurl      string
+	configprocotol string
 )
 
 func InitDocker() {
 	dockerbin = beego.AppConfig.String("Dockerbin")
 	dockerregsitry = beego.AppConfig.String("Dockerregsitry")
+
+	antbin = beego.AppConfig.String("Antbin")
+	configurl = beego.AppConfig.String("ConfigServerUrl")
+	configprocotol = beego.AppConfig.String("ConfigServerProtocol")
 	if dockerbin == "" {
 		dockerbin = "docker"
 	}
 	if dockerregsitry == "" {
 		beego.Error("app.conf -> key:Dockerregsitry is nil")
 	}
+	if antbin == "" {
+		antbin = "ant"
+	}
 	bash := exec.Command(dockerbin)
 	if err := bash.Run(); err != nil {
 		beego.Error("docker deam not found. 查看app.conf Dockerbin是否设置正确")
 	}
+}
+
+func Compilecode(compile, proname string, message chan string) error {
+	message <- "开始编译代码"
+	var cmd = []string{"git chekcout .", "ant"}
+	var buf bytes.Buffer
+	for _, v := range cmd {
+		bash := exec.Command("/bin/bash", "-c", v)
+		bash.Dir = "/code/" + proname
+		bash.Stderr = &buf
+		if err := bash.Run(); err != nil {
+			return errors.New(err.Error() + buf.String())
+		}
+		if !bash.ProcessState.Success() {
+			return errors.New(bash.ProcessState.String() + buf.String())
+		}
+	}
+	return nil
 }
 
 //docker pull dockerrepositry:port/reimage:tag
@@ -72,24 +100,40 @@ func BuildImage(node *mpro.Node, ver string, message chan string) error {
 
 	pro := node.Pro
 	mirr := node.Mir
-	//git 切换
-	//...end git
 	port_list := GetPortList(node.Port)
 	port := ""
+	pro_path := "code/"
+	git_name := Gittoname(pro.Git)
 	for _, v := range port_list {
 		port = v + " " + port + " "
 	}
-	//删除项目忽略文件
-	if node.Pro.Insfile != "" {
-		if Gitchecver(node.Mac.Adminurl, ver, node.Pro.Insfile, message) != true {
-			return errors.New("删除项目忽略文件失败")
+	if Gitchecver(node.Mac.Adminurl, ver, node.Pro.Insfile, message) != true {
+		return errors.New("切换版本出错")
+	}
+	if pro.Compile != "" && pro.Compile == "JAVASE" { //删除build/, build.xml, src
+		cmd := []string{"rm -rf build*", "rm -rf src/"}
+		var buferr bytes.Buffer
+		for _, v := range cmd {
+			bash := exec.Command("/bin/bash", "-c", v)
+			bash.Dir = pro_path + git_name
+			bash.Stderr = &buferr
+			if err := bash.Run(); err != nil {
+				beego.Error("删除"+v+"出错, error:", err, buferr.String())
+				message <- "删除" + v + "出错, error:" + err.Error() + buferr.String()
+			}
 		}
 	}
 	beego.Debug("port:", port)
-	pro_path_name := Gittoname(pro.Git)
-	pro_path := "code/"
+
+	pro_code := Gittoname(pro.Git)
+	beego.Debug("pro_code:", pro_code)
 	dockerfile_str := "FROM " + mirr.Hubaddress + "\n" +
-		"ADD " + Gittoname(pro.Git) + " /cihi/run/  \n" +
+		"ADD " + pro_code + " /cihi/run/  \n" +
+		"RUN rm -rf /cihi/run/.git" + "\n" +
+		"ENV CONFIGPROTOCOL  " + configprocotol + "\n" + //项目名
+		"ENV CONFIGURL  " + configurl + "\n" + //项目名
+		"ENV PRONAME  " + pro.Sign + "\n" + //项目名
+		"ENV PROVERSION " + ver + "\n" + //版本号
 		"EXPOSE " + port
 	//此处要有锁
 	dockerfile, fileerr := os.Create(pro_path + "/Dockerfile")
@@ -102,7 +146,7 @@ func BuildImage(node *mpro.Node, ver string, message chan string) error {
 		beego.Error("写DOCKERFILE 出错:", w_err)
 		return w_err
 	}
-	imagename := dockerregsitry + "/" + pro_path_name + ":" + node.CurVer
+	imagename := dockerregsitry + "/" + git_name + ":" + node.CurVer
 	beego.Debug(imagename)
 	bash := exec.Command(dockerbin, "build", "-t="+imagename, ".")
 	bash.Dir = pro_path
@@ -203,47 +247,43 @@ func Delimage(image, node_ver string, message chan string) error {
 func Gitpull(giturl string, message chan string) error {
 	message <- "开始git 操作"
 	gitpath := Gittoname(giturl)
+	beego.Debug("解析git仓库地址:", gitpath)
 	if gitpath == "" {
 		return errors.New("git仓库地址无效," + giturl)
 	}
-	dir, _ := os.Getwd()
+	var buferr bytes.Buffer
 	pro_path := "code/" + gitpath
+	beego.Debug("项目路径", pro_path)
 	if is, _ := PathExists(pro_path); is {
-		if err := os.Chdir(pro_path); err != nil {
-
-			beego.Error("打开路径:"+dir+"/"+pro_path, err)
-			return err
-		}
-		bash := exec.Command("git", "pull", "origin", "master")
-		if err := bash.Run(); err != nil {
-			beego.Error(gitpath, "同步出错:", err)
-			return err
-		} else {
-			message <- "同步完成"
-			return nil
-		}
-	}
-
-	bash := exec.Command("git", "clone", giturl)
+		cmd := []string{"git checkout .", "git pull origin master"}
+		for _, v := range cmd {
+			bash := exec.Command("/bin/bash", "-c", v)
+			bash.Dir = pro_path
+			if err := bash.Run(); err != nil {
+				beego.Error(gitpath, "同步出错:", err)
+				message <- "同步出错,准备重新克隆"
+				bash = exec.Command("/bin/bash", "-c", "git clone "+giturl)
+				bash.Stderr = &buferr
+				bash.Dir = "code"
+				if err := bash.Run(); err != nil {
+					message <- "克隆出错:"
+					beego.Error("克隆出错:" + err.Error() + buferr.String())
+					return err
+				}
+			}
+		} // end for
+		message <- "同步完成"
+		return nil
+	} //end 路径是否存在
+	beego.Debug("开始克隆")
+	bash := exec.Command("/bin/bash", "-c", "git clone "+giturl)
 	bash.Dir = "code/"
-	stdout, stderr := bash.StdoutPipe()
-	if stderr != nil {
-		beego.Info("Error:", stderr)
+	bash.Stdout = os.Stdout
+	bash.Stderr = &buferr
+	if err := bash.Run(); err != nil {
+		message <- "克隆出错:" + buferr.String()
+		return errors.New(err.Error() + buferr.String())
 	}
-	if starterr := bash.Start(); starterr != nil {
-		beego.Error("克隆仓库出错:", starterr)
-		return starterr
-	}
-	reader := bufio.NewReader(stdout)
-	for {
-		line, err2 := reader.ReadString('\n')
-		if err2 != nil || io.EOF == err2 {
-			beego.Error("err2:", err2)
-			break
-		}
-		message <- line
-	}
-	bash.Wait()
 	beego.Info(bash.ProcessState.String())
 	message <- "克隆完成"
 	return nil
@@ -254,18 +294,15 @@ func Gitchecver(giturl, version, insfile string, message chan string) bool {
 	gitpath := Gittoname(giturl)
 	pro_path := "code/" + gitpath
 	if is, _ := PathExists(pro_path); is {
-		//切换 工作目录
-		if err := os.Chdir(pro_path); err != nil {
-			dir, _ := os.Getwd()
-			beego.Error("打开路径:"+dir+"/"+pro_path, err)
-			return false
-		}
-		bash := exec.Command("git", "checkout", "master")
+		bash := exec.Command("git", "checkout", ".")
+		bash.Dir = pro_path
 		if err := bash.Run(); err != nil {
 			beego.Error(gitpath, "切换版本(master)出错:", err)
 			return false
 		}
-		bash = exec.Command("git", "checkout", "version")
+		bash = exec.Command("/bin/bash", "-c", "git checkout "+version)
+		beego.Debug("bash.Dir=", bash.Dir)
+		bash.Dir = pro_path
 		if err := bash.Run(); err != nil {
 			beego.Error(gitpath, "切换版本出错:", err)
 			return false
@@ -276,7 +313,6 @@ func Gitchecver(giturl, version, insfile string, message chan string) bool {
 			if err := os.Remove(v); err != nil {
 				beego.Error("删除忽略文件或目录"+v+"出错：", err)
 			}
-
 		}
 		message <- "success"
 		return true
@@ -286,24 +322,44 @@ func Gitchecver(giturl, version, insfile string, message chan string) bool {
 	}
 }
 
-func GitTags(giturl string) []string {
+func GitTags(giturl string) ([]string, error) {
+	beego.Debug("准备执行git tag")
 	gitpath := Gittoname(giturl)
 	pro_path := "code/" + gitpath
 	var tags []string
 	var buf bytes.Buffer
+	var buferr bytes.Buffer
+	message := make(chan string, 1)
+	go func() {
+		for {
+			beego.Info(<-message)
+		}
+
+	}()
+	if err := Gitpull(giturl, message); err != nil {
+		return tags, err
+	}
+
 	if is, _ := PathExists(pro_path); is {
 		bash := exec.Command("git", "tag")
 		bash.Dir = pro_path
 		bash.Stdout = &buf
+		bash.Stderr = &buferr
 		if err := bash.Run(); err != nil {
 			beego.Error(gitpath, "列出版本(master)出错:", err)
+			return tags, errors.New(err.Error() + buferr.String())
 		}
-		tags_str := buf.String()
-		tags = strings.Split(tags_str, "\n")
 
+		tags_str := buf.String()
+		beego.Debug(tags_str)
+		tags = strings.Split(tags_str, "\n")
+		beego.Debug("命令退出状态:", bash.ProcessState.String())
+		beego.Debug("命令标准错误:", buferr.String())
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(tags)))
-	return tags
+	beego.Debug("tags:", tags)
+
+	sort.Sort(sort.Reverse(sort.StringSlice(tags))) //从大到小排序
+	return tags, nil
 }
 
 //客户端PULL IMAGE
@@ -433,7 +489,7 @@ func Cliinspectcon(nodes []*mpro.Node) ([]*docker.Container, error) {
 }
 
 //客户端创建容器
-func Clicreatecon(adminurl, port, ver, giturl string) (string, error) {
+func Clicreatecon(adminurl, port, ver, giturl, env string) (string, error) {
 	//	certPath := "conf/cert.pem"
 	//	keyPath := "conf/key.pem"
 	//	caPath := "conf/ca.pem"
@@ -458,6 +514,7 @@ func Clicreatecon(adminurl, port, ver, giturl string) (string, error) {
 	beego.Debug("image:", image)
 	//	client.SkipServerVersionCheck = true
 	// Reading logs from container a84849 and sending them to buf.
+	dockerenv := []string{"PROENV=" + env}
 	conf := docker.Config{
 		AttachStderr: true,
 		AttachStdin:  false,
@@ -465,6 +522,7 @@ func Clicreatecon(adminurl, port, ver, giturl string) (string, error) {
 		Tty:          true,
 		OpenStdin:    true,
 		Image:        image,
+		Env:          dockerenv,
 		ExposedPorts: exposedports,
 	}
 
@@ -497,7 +555,8 @@ func Clicreatecon(adminurl, port, ver, giturl string) (string, error) {
 	//		},
 	//	}
 	hostconfig := docker.HostConfig{
-		PortBindings: portbinding,
+		PortBindings:  portbinding,
+		RestartPolicy: docker.AlwaysRestart(),
 	}
 
 	createconopts := docker.CreateContainerOptions{
@@ -562,6 +621,10 @@ func Clidelcon(adminurl, conid string) error {
 	//	certPath := "conf/cert.pem"
 	//	keyPath := "conf/key.pem"
 	//	caPath := "conf/ca.pem"
+	if conid == "" {
+		beego.Info("初始化容器,ID为空,return nil")
+		return nil
+	}
 	endpoint := "tcp://" + adminurl
 	//	client, err := docker.NewTLSClient(endpoint, certPath, keyPath, caPath)
 	client, err := docker.NewClient(endpoint)
@@ -591,5 +654,6 @@ func PathExists(path string) (bool, error) {
 	if os.IsNotExist(err) {
 		return false, nil
 	}
+	beego.Debug("error:", err)
 	return false, err
 }

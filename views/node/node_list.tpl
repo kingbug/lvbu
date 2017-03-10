@@ -206,7 +206,7 @@
               <h3 class="box-title">Collapsable</h3>
 
               <div id="ms_title" class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                <span class="btn btn-box-tool"><i class="fa fa-times"></i></span>
               </div>
               <!-- /.box-tools -->
             </div>
@@ -268,7 +268,7 @@
 				loadver(msg.data); 
 				return;
 			} else {
-				alert(msg.data);
+				alert(msg.error);
 			}
 			
 		},
@@ -347,9 +347,11 @@
 		console.log("Test2")
 	});
 	
-	//实时信息打印完毕，动态添加的关闭按钮的单击事件
-	$("div.center").on("click", "button[data-widget='remove']", function(){
+	//实时信息打印完毕关闭按钮的单击事件
+	$("div.center").on("click", "span.btn-box-tool", function(){
 		$("div.ms_modal").hide(1000);
+		ms_modal_contr = false;
+		return;
 	});
 	
 

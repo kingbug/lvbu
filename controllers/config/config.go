@@ -61,8 +61,8 @@ func (c *ConController) Add() {
 	//	sign := c.GetString("sign")
 	//	env_id := men.Getenvid("sign")
 	pro := mpro.Project{Id: uint(pro_id)}
-	if key == "" || value == "" {
-		c.Data["json"] = "key And value 不能为空"
+	if key == "" {
+		c.Data["json"] = "key 不能为空"
 		c.ServeJSON()
 		return
 	}
@@ -87,12 +87,12 @@ func (c *ConController) Add() {
 	}
 	if conferr := conf.Insert(); conferr != nil {
 		beego.Error("动作：添加配置项,数据库出错:", conferr)
-		c.Data["json"] = conferr.Error()
+		c.Data["json"] = map[string]string{"message": "error", "error": conferr.Error()}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = "success"
+		c.Data["json"] = map[string]interface{}{"message": "success", "confid": conf.Id}
 		c.ServeJSON()
 		return
 	}
@@ -121,11 +121,7 @@ func (c *ConController) Edit() {
 	//	sign := c.GetString("sign")
 	//	env_id := men.Getenvid("sign")
 	conf := mcn.Config{Id: uint(conf_id)}
-	if value == "" {
-		c.Data["json"] = "value 不能为空"
-		c.ServeJSON()
-		return
-	}
+
 	if confreaderr := conf.Read(); confreaderr != nil {
 		beego.Error("动作：修改配置项,数据库出错:", confreaderr.Error())
 	}

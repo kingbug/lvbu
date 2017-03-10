@@ -34,6 +34,25 @@ func Getsex(status uint) string {
 	return txt
 }
 
+func GetCompile(source int) string {
+	var txt string
+	switch source {
+	case 1:
+		txt = "JAVA"
+	case 2:
+		txt = "PHP"
+	}
+	return txt
+}
+func Compilemap() map[int]string {
+	compile := map[int]string{
+		1: "JAVASE",
+		2: "JAVAEE",
+		3: "PHP",
+	}
+	return compile
+}
+
 func GetNeedsSource(source int) string {
 	var txt string
 	switch source {

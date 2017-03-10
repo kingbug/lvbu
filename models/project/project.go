@@ -12,6 +12,7 @@ type Project struct {
 	Id      uint      `orm:"pk;auto"` //
 	Name    string    `orm:"size(50);unique"`
 	Sign    string    `orm:"size(50)"`
+	Compile string    `orm:"size(50)"`
 	Git     string    `orm:"size(100)"`
 	Gituser string    `orm:"size(50)"`
 	Gitpass string    `orm:"size(50)"`

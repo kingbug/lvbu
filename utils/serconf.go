@@ -23,26 +23,22 @@ type Serconf struct {
 	Data []Conf
 }
 
-func Serialijson(this *Serconf, breaks string) (*bytes.Buffer, error) {
-	var data bytes.Buffer
-	if breaks == "" {
-		breaks = "\n"
+func Serialijson(this map[string]string) (*bytes.Buffer, error) {
+	var buf bytes.Buffer
+	if data, err := json.Marshal(this); err != nil {
+		return &buf, err
+	} else if _, err := buf.Write(data); err != nil {
+		return &buf, err
+	} else {
+		return &buf, nil
 	}
-	data.WriteString("{")
-	for _, val := range this.Data {
-		data.WriteString("\"" + val.Key + "\":" + "\"" + val.Value + "\"," + breaks)
-	}
-	data.WriteString("}")
-	return &data, nil
 }
 
-func Serialiproper(this *Serconf, breaks string) (*bytes.Buffer, error) {
+func Serialiproper(this map[string]string) (*bytes.Buffer, error) {
 	var data bytes.Buffer
-	if breaks == "" {
-		breaks = "\n"
-	}
-	for _, val := range this.Data {
-		data.WriteString(val.Key + "=" + val.Value + breaks)
+	breaks := "\n"
+	for k, v := range this {
+		data.WriteString(k + "=" + v + breaks)
 	}
 	return &data, nil
 }
@@ -62,7 +58,7 @@ func GetConf(sign, env, ver, filetype, breaks string) (*bytes.Buffer, error) {
 	filename := confidir + "/" + pro_name + "/" + env + "_" + ver + ".conf"
 	var conffile *os.File
 	defer conffile.Close()
-	var serconf Serconf
+	var jsonfile = make(map[string]string)
 	var fileerr error
 	if conffile, fileerr = os.OpenFile(filename, os.O_RDONLY, 0); fileerr != nil && os.IsNotExist(fileerr) {
 		//当文件不存在时，（这里假设项目从头到生命结束，都在本系统生态下），即时，当前版本，需要从数据库读取
@@ -81,12 +77,8 @@ func GetConf(sign, env, ver, filetype, breaks string) (*bytes.Buffer, error) {
 				return conffortype, errors.New("生成老版本配置时，数据查询失败:" + err.Error())
 			}
 		}
-		var conf []Conf
 		for _, v := range oldverconf {
-			conf = append(conf, Conf{Key: fmt.Sprintf("%s", v[0]), Value: fmt.Sprintf("%s", v[1])})
-		}
-		serconf = Serconf{
-			Data: conf,
+			jsonfile[fmt.Sprintf("%s", v[0])] = fmt.Sprintf("%s", v[1])
 		}
 
 	} else {
@@ -95,30 +87,28 @@ func GetConf(sign, env, ver, filetype, breaks string) (*bytes.Buffer, error) {
 			beego.Error("ioutil.ReadAll,err:", rerr)
 			return conffortype, rerr
 		}
-		jserr := json.Unmarshal(data, &serconf)
+		jserr := json.Unmarshal(data, &jsonfile)
 		if jserr != nil {
 			beego.Error("Unmarshal error:", jserr)
 			return conffortype, jserr
 		}
 	}
-	beego.Debug(&serconf)
+	beego.Debug(&jsonfile)
 	// 正式转换格式文件
 	switch filetype {
 	case "json":
-		return Serialijson(&serconf, breaks)
+		return Serialijson(jsonfile)
 	case "properties":
-		return Serialiproper(&serconf, breaks)
+		return Serialiproper(jsonfile)
 	default:
 		return conffortype, nil
 	}
 }
 
-func Makejsonconf(sign, env, ver string, conf []Conf) error {
-	serconf := Serconf{
-		Data: conf,
-	}
+func Makejsonconf(sign, env, ver string, conf map[string]string) error {
+
 	confidir := "prohisconf"
-	b, berr := json.Marshal(serconf)
+	b, berr := json.Marshal(conf)
 	if berr != nil {
 		return errors.New("序列化json错误," + berr.Error())
 	}
@@ -141,6 +131,5 @@ func Makejsonconf(sign, env, ver string, conf []Conf) error {
 	}
 	f.Sync()
 	f.Close()
-	beego.Debug(serconf)
 	return nil
 }

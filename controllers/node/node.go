@@ -257,15 +257,16 @@ func (c *NodeController) Wsadd() {
 	go func() {
 		if contr, err := utils.PullImage(mirr.Hubaddress, message); !contr {
 			message <- err.Error()
-		}
-		if err := utils.Gitpull(pro.Git, message); err != nil {
+		} else if err := utils.Gitpull(pro.Git, message); err != nil {
 			message <- err.Error()
+			message <- "error"
+		} else {
+			message <- "success"
 		}
-		message <- "success"
-
 	}()
 	beego.Info("websocket 接收到(node):", node)
 	defer ws.Close()
+	forcontr := false
 	for {
 		select {
 		case mes := <-message:
@@ -280,11 +281,19 @@ func (c *NodeController) Wsadd() {
 					beego.Error("动作:数据库操作，添加节点失败：", err)
 				}
 				beego.Debug("处理结束")
-				break
+				forcontr = true
 			}
+			if mes == "error" {
+				ws.Close()
+				beego.Debug("处理结束")
+				forcontr = true
+			}
+		} //end select
+		if forcontr {
+			break
 		}
 
-	}
+	} //end for
 	beego.Info("message 循环已退出")
 }
 
@@ -419,26 +428,27 @@ RECEIVE:
 						message <- "生成老版本配置时，数据查询失败:" + err.Error()
 					}
 				}
-				var conf []utils.Conf
+				var jsonfile = make(map[string]string)
 				for _, v := range oldverconf {
-					conf = append(conf, utils.Conf{Key: fmt.Sprintf("%s", v[0]), Value: fmt.Sprintf("%s", v[1])})
+					jsonfile[fmt.Sprintf("%s", v[0])] = fmt.Sprintf("%s", v[1])
 				}
-				if err := utils.Makejsonconf(node.Pro.Sign, node.Mac.Env.Sign, node.CurVer, conf); err != nil {
+				if err := utils.Makejsonconf(node.Pro.Sign, node.Mac.Env.Sign, node.CurVer, jsonfile); err != nil {
 					message <- "生成老版本配置失败, error:" + err.Error()
 				}
 			}
 
 		}()
 		go func() { //部署容器
-			if node.DocId != "" {
-				if err := utils.Clidelcon(node.Mac.Adminurl, node.DocId); err != nil {
-					message <- "Info:" + err.Error()
-				}
-				//客户端创建镜像
+			var comperr error
+			//编译工作
+			if node.Pro.Compile != "" && !strings.Contains(node.Pro.Compile, "JAVA") {
+				comperr = nil
+			} else if err := utils.Compilecode(node.Pro.Compile, node.Pro.Name, message); err != nil {
+				message <- "编译代码失败, error:" + err.Error()
+				comperr = err
 			}
-
-			//BuildImage
-			if err := utils.BuildImage(&node, node_ver, message); err != nil {
+			if comperr != nil {
+			} else if err := utils.BuildImage(&node, node_ver, message); err != nil { //BuildImage
 				message <- "镜像BUILD失败,error:" + err.Error()
 			} else if err := utils.PushImages(node.Pro.Git, node_ver, message); err != nil {
 				//上传镜像
@@ -446,7 +456,9 @@ RECEIVE:
 			} else if err := utils.Clipullimage(node.Mac.Adminurl, node.Pro.Git, node_ver, message); err != nil {
 				//客户端下载镜像
 				message <- "客户端下载镜像失败,error:" + err.Error()
-			} else if node_docid, createerr := utils.Clicreatecon(node.Mac.Adminurl, node.Port, node_ver, node.Pro.Git); createerr != nil {
+			} else if err := utils.Clidelcon(node.Mac.Adminurl, node.DocId); err != nil {
+				message <- "Info:" + err.Error()
+			} else if node_docid, createerr := utils.Clicreatecon(node.Mac.Adminurl, node.Port, node_ver, node.Pro.Git, node.Mac.Env.Sign); createerr != nil {
 				message <- "客户端创建镜像失败,error:" + createerr.Error()
 			} else if err := utils.Clistartcon(node.Mac.Adminurl, node_docid); err != nil {
 				node.DocId = node_docid
@@ -471,7 +483,7 @@ RECEIVE:
 				}
 				message <- "success"
 			}
-
+			message <- "error"
 		}()
 		node.CurVer = node_ver
 		for {

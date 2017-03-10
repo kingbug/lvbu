@@ -29,6 +29,7 @@ func (c *ProController) Add() {
 		git := c.GetString("git")
 		gituser := c.GetString("gituser") //选 填
 		insfile := c.GetString("insfile")
+		compile, _ := c.GetInt("compile")
 		contr := true
 		if name == "" {
 			c.Data["nameerr"] = "项目名称不能为空"
@@ -39,6 +40,10 @@ func (c *ProController) Add() {
 		}
 		if git == "" {
 			c.Data["giterr"] = "仓库地址不能为空"
+			contr = false
+		}
+		if compile == 0 {
+			c.Data["compileerr"] = "代码标识不能为空"
 			contr = false
 		}
 		if sign == "" {
@@ -56,6 +61,7 @@ func (c *ProController) Add() {
 				Name:    name,
 				Sign:    sign,
 				Git:     git,
+				Compile: utils.GetCompile(compile),
 				Gituser: userinfo[0],
 				Gitpass: userinfo[1],
 				Insfile: insfile,
@@ -74,6 +80,7 @@ func (c *ProController) Add() {
 				Name:    name,
 				Sign:    sign,
 				Git:     git,
+				Compile: utils.GetCompile(compile),
 				Gituser: gituser,
 				Insfile: insfile,
 			}
@@ -118,14 +125,15 @@ func (c *ProController) Edit() {
 		git := c.GetString("git")
 		gituser := c.GetString("gituser")
 		insfile := c.GetString("insfile")
+		compile, _ := c.GetInt("compile")
 		contr := true
 		if name == "" {
 			c.Data["nameerr"] = "项目名称不能为空"
 			contr = false
 		} else {
-			var tmp_pro mpro.Project
-			new(mpro.Project).Query().Filter("Name", name).One(&tmp_pro)
-			if tmp_pro.Id != uint(id) {
+			var tmp_project mpro.Project
+			new(mpro.Project).Query().Filter("Name", name).One(&tmp_project)
+			if tmp_project.Id != uint(id) {
 				c.Data["nameerr"] = "项目名称重复"
 				contr = false
 			}
@@ -136,6 +144,10 @@ func (c *ProController) Edit() {
 		}
 		if sign == "" {
 			c.Data["signerr"] = "唯一标识不能为空"
+			contr = false
+		}
+		if compile == 0 {
+			c.Data["compileerr"] = "代码标识不能为空"
 			contr = false
 		}
 		userinfo := strings.SplitN(gituser, ":", 2)
@@ -154,6 +166,7 @@ func (c *ProController) Edit() {
 			pro.Gituser = userinfo[0]
 			pro.Gitpass = userinfo[1]
 			pro.Insfile = insfile
+			pro.Compile = utils.GetCompile(compile)
 			if proerr := pro.Update(); proerr != nil {
 				beego.Error("动作：数据库操作, 修改项目出错:", proerr)
 			} else {
@@ -167,6 +180,7 @@ func (c *ProController) Edit() {
 				Sign:    sign,
 				Git:     git,
 				Gituser: gituser,
+				Compile: utils.GetCompile(compile),
 				Insfile: insfile,
 			}
 			c.Data["pro"] = &pro
@@ -213,6 +227,7 @@ func (c *ProController) Del() {
 	}
 }
 
+//版本列表
 func (c *ProController) Verlist() {
 	uid := c.GetSession("uid").(uint)
 	c.Data["uid"] = uid
@@ -225,11 +240,30 @@ func (c *ProController) Verlist() {
 	pro.Id = uint(id)
 	if err := pro.Read(); err != nil {
 		beego.Error("动作:数据库操作,查询项目出错:", err)
-		c.Data["json"] = map[string]interface{}{"message": "error", "data": err.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
+		c.ServeJSON()
+		return
+	} else {
+		row, err := new(mpro.Node).Query().Filter("Pro__Id", pro.Id).Count()
+		if err != nil {
+			beego.Error("动作:数据库操作,查询项目节点异常error:", err, "row:", row)
+			c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
+			c.ServeJSON()
+			return
+		} else if row < 1 {
+			c.Data["json"] = map[string]interface{}{"message": "success", "data": []string{"无可能节点"}}
+			c.ServeJSON()
+			return
+		}
+
+	}
+	tags, err := utils.GitTags(pro.Git)
+	if err != nil {
+		beego.Error("error:", err)
+		c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
 		c.ServeJSON()
 		return
 	}
-	tags := utils.GitTags(pro.Git)
 	c.Data["json"] = map[string]interface{}{"message": "success", "data": tags}
 	c.ServeJSON()
 	return

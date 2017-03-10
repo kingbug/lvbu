@@ -32,6 +32,8 @@ func InitTemplate() {
 	beego.AddFuncMap("Getmirgroup", mir.Getmirgroup)
 	beego.AddFuncMap("Getmir", mir.Getmir)
 
+	beego.AddFuncMap("Compilemap", utils.Compilemap)
+
 	beego.AddFuncMap("Getnode", mpro.Getnode)
 	//	beego.AddFuncMap("getProjectname", projects.GetProjectName)
 	//	beego.AddFuncMap("getLeaveProcess", leaves.ListLeaveApproverProcessHtml)
@@ -40,7 +42,6 @@ func InitTemplate() {
 	//	beego.AddFuncMap("getGooutProcess", goouts.ListGooutApproverProcessHtml)
 	//	beego.AddFuncMap("getOagoodProcess", oagoods.ListOagoodApproverProcessHtml)
 	//	beego.AddFuncMap("getOvertimeProcess", overtimes.ListOvertimeApproverProcessHtml)
-
 	beego.AddFuncMap("Seek", utils.Seek)
 	beego.AddFuncMap("getDate", utils.GetDate)
 	beego.AddFuncMap("getDateMH", utils.GetDateMH)
