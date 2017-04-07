@@ -109,19 +109,52 @@ func Seek(a, b int) int {
 	return a % b
 }
 
-func Gittoname(giturl string) string {
-	end := strings.LastIndex(giturl, ".")
-	start := strings.LastIndex(giturl, "/")
-	if start == -1 || end == -1 {
-		return ""
+func Gittoname(giturl string) []string {
+	if giturl == "" {
+		return nil
 	}
-	return giturl[start+1 : end]
+	gitlist := strings.Split(giturl, ",")
+	for k, v := range gitlist {
+		end := strings.LastIndex(v, ".")
+		start := strings.LastIndex(v, "/")
+		if start == -1 || end == -1 {
+			return nil
+		}
+		gitlist[k] = v[start+1 : end]
+	}
+
+	return gitlist
+}
+
+func GitlisttoString(gitlist []string) string {
+	tmp_git := ""
+	for _, giturl := range gitlist {
+		if giturl != "" {
+			tmp_git = giturl + "," + tmp_git
+		}
+	}
+	beego.Debug(tmp_git[:len(tmp_git)-1])
+	return tmp_git[:len(tmp_git)-1]
+}
+
+func VerlisttoString(version []string) string {
+	tmp_ver := ""
+	for _, ver := range version {
+		if ver != "" {
+			tmp_ver = ver + "-" + tmp_ver
+		}
+	}
+	beego.Debug("tmp_ver:", tmp_ver[:len(tmp_ver)-1])
+	return tmp_ver[:len(tmp_ver)-1]
 }
 
 //example: 80:90, 88:89 返回90, 89
 func GetPortList(port string) []string {
-	buf_port := strings.Split(port, ",")
 	var tmp_port []string
+	if port == "" {
+		return tmp_port
+	}
+	buf_port := strings.Split(port, ",")
 	for _, v := range buf_port {
 		v = strings.Replace(v, " ", "", -1)
 		v = strings.Replace(v, "\n", "", -1)
@@ -130,11 +163,26 @@ func GetPortList(port string) []string {
 	return tmp_port
 }
 
+func Getmacports(port string) []string {
+	var tmp_port []string
+	if port == "" {
+		return tmp_port
+	}
+	buf_port := strings.Split(port, ",")
+
+	for _, v := range buf_port {
+		v = strings.Replace(v, " ", "", -1)
+		v = strings.Replace(v, "\n", "", -1)
+		tmp_port = append(tmp_port, strings.Split(v, ":")[0])
+	}
+	return tmp_port
+}
+
 //example: 80:90, 88:89 返回map["80"]{"90"},["88"]{"89"}
-func Getportmap(port string) (map[string]string, error) {
+func Getportmap(port string) (map[string][]string, error) {
 	buf_port := strings.Split(port, ",")
 	beego.Debug("buf_port(len):", len(buf_port))
-	var tmp_port = make(map[string]string)
+	var tmp_port = make(map[string][]string)
 	for k, v := range buf_port {
 		beego.Debug("k", k)
 		v = strings.Replace(v, " ", "", -1)
@@ -142,13 +190,18 @@ func Getportmap(port string) (map[string]string, error) {
 		tmp_pairs := strings.Split(v, ":")
 		beego.Debug("tmp_paris(len):", len(tmp_pairs), "value:", tmp_pairs)
 		if len(tmp_pairs) != 2 {
-			return make(map[string]string), errors.New(port + "格式错误")
+			return nil, errors.New(port + "格式错误")
 		}
 		beego.Debug(tmp_pairs[0], ",", tmp_pairs[1])
-		key := strings.Replace(strings.Replace(tmp_pairs[0], " ", "", -1), "\n", "", -1)
-		value := strings.Replace(strings.Replace(tmp_pairs[1], " ", "", -1), "\n", "", -1)
-
-		tmp_port[key] = value
+		value := strings.Replace(strings.Replace(tmp_pairs[0], " ", "", -1), "\n", "", -1)
+		key := strings.Replace(strings.Replace(tmp_pairs[1], " ", "", -1), "\n", "", -1)
+		m, ok := tmp_port[key]
+		if !ok {
+			m = []string{value}
+		} else {
+			m = append(m, value)
+		}
+		tmp_port[key] = m
 	}
 	return tmp_port, nil
 }

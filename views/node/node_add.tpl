@@ -115,7 +115,7 @@
                                     <label for="inputName" class="col-sm-2 control-label">所属环境</label>
 
                                     <div class="col-sm-10">
-                                        运维环境
+                                        {{.env.Name}}
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -349,7 +349,7 @@
 						socket.send(msg.data);
 						return;
 					} else {
-						alert(msg.data);
+						alert(msg.error);
 					}
 					
 				},

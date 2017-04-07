@@ -1,13 +1,16 @@
 package project
 
 import (
+	"fmt"
 	ctl "lvbu/controllers"
 	mper "lvbu/models/permission"
 	mpro "lvbu/models/project"
 	"lvbu/utils"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/gorilla/websocket"
 )
 
 type ProController struct {
@@ -17,7 +20,8 @@ type ProController struct {
 func (c *ProController) Add() {
 	uid := c.GetSession("uid").(uint)
 	c.Data["uid"] = uid
-	if !mper.Isperitem("proa", uid) { //项目添加(proa)
+
+	if !mper.Isperitem("proa", uid) { //项目添加(proa)和环境判断
 		beego.Debug("动作:请求添加项目,权限验证失败")
 		c.Abort("503")
 	}
@@ -26,10 +30,14 @@ func (c *ProController) Add() {
 	} else if c.Ctx.Request.Method == "POST" {
 		name := c.GetString("name")
 		sign := c.GetString("sign")
-		git := c.GetString("git")
+		git := c.GetStrings("git")
 		gituser := c.GetString("gituser") //选 填
 		insfile := c.GetString("insfile")
-		compile, _ := c.GetInt("compile")
+		compile := c.GetString("compile")
+		compilever := c.GetString("compilever")
+		sharedpath := c.GetString("sharedpath")
+		dns := c.GetString("dns")
+		beego.Info("gitList:", git)
 		contr := true
 		if name == "" {
 			c.Data["nameerr"] = "项目名称不能为空"
@@ -38,16 +46,27 @@ func (c *ProController) Add() {
 			c.Data["nameerr"] = "项目名称重复"
 			contr = false
 		}
-		if git == "" {
-			c.Data["giterr"] = "仓库地址不能为空"
-			contr = false
+		git_contr := false
+		for _, v_git := range git {
+			if v_git != "" {
+				git_contr = true
+				break
+			}
 		}
-		if compile == 0 {
+		if git_contr == false {
+			c.Data["giterr"] = "仓库地址不能为空"
+			contr = git_contr
+		}
+		if compile == "" {
 			c.Data["compileerr"] = "代码标识不能为空"
 			contr = false
 		}
+
 		if sign == "" {
 			c.Data["signerr"] = "唯一标识不能为空"
+			contr = false
+		} else if new(mpro.Project).Query().Filter("Sign", sign).Exist() {
+			c.Data["signerr"] = "项目标识重复"
 			contr = false
 		}
 		userinfo := strings.SplitN(gituser, ":", 2)
@@ -55,16 +74,24 @@ func (c *ProController) Add() {
 			c.Data["gitusererr"] = "格式输入有误"
 			contr = false
 		}
-
+		if dns != "" && len(dns) > 16 {
+			c.Data["dnserr"] = "格式输入有误"
+			contr = false
+		}
+		tmp_git := utils.GitlisttoString(git)
 		if contr {
+
 			pro := mpro.Project{
-				Name:    name,
-				Sign:    sign,
-				Git:     git,
-				Compile: utils.GetCompile(compile),
-				Gituser: userinfo[0],
-				Gitpass: userinfo[1],
-				Insfile: insfile,
+				Name:       name,
+				Sign:       sign,
+				Git:        tmp_git,
+				Compile:    compile,
+				Compilever: compilever,
+				Gituser:    userinfo[0],
+				Gitpass:    userinfo[1],
+				Sharedpath: sharedpath,
+				Insfile:    insfile,
+				Dns:        dns,
 			}
 
 			if proerr := pro.Insert(); proerr != nil {
@@ -76,13 +103,17 @@ func (c *ProController) Add() {
 			c.SetSession("newpro", pro.Id) //跳转项目列表后，突出显示新添加项目
 			c.Redirect("/prolist", 302)
 		} else {
+
 			pro := mpro.Project{
-				Name:    name,
-				Sign:    sign,
-				Git:     git,
-				Compile: utils.GetCompile(compile),
-				Gituser: gituser,
-				Insfile: insfile,
+				Name:       name,
+				Sign:       sign,
+				Git:        tmp_git,
+				Compile:    compile,
+				Compilever: compilever,
+				Gituser:    gituser,
+				Insfile:    insfile,
+				Sharedpath: sharedpath,
+				Dns:        dns,
 			}
 			c.Data["pro"] = &pro
 			c.TplName = "project/project_add.tpl"
@@ -94,6 +125,7 @@ func (c *ProController) Add() {
 func (c *ProController) Edit() {
 	uid := c.GetSession("uid").(uint)
 	c.Data["uid"] = uid
+
 	if !mper.Isperitem("proe", uid) { //项目编辑(proe)
 		beego.Debug("动作:请求编辑项目,权限验证失败")
 		c.Abort("503")
@@ -121,11 +153,13 @@ func (c *ProController) Edit() {
 			c.Abort("503") //除非在html源码里改，否则不会出错
 		}
 		name := c.GetString("name")
-		sign := c.GetString("sign")
-		git := c.GetString("git")
+		git := c.GetStrings("git")
 		gituser := c.GetString("gituser")
 		insfile := c.GetString("insfile")
-		compile, _ := c.GetInt("compile")
+		compile := c.GetString("compile")
+		compilever := c.GetString("compilever")
+		sharedpath := c.GetString("sharedpath")
+		dns := c.GetString("dns")
 		contr := true
 		if name == "" {
 			c.Data["nameerr"] = "项目名称不能为空"
@@ -137,36 +171,51 @@ func (c *ProController) Edit() {
 				c.Data["nameerr"] = "项目名称重复"
 				contr = false
 			}
+
 		}
-		if git == "" {
+		git_contr := false
+		for _, v_git := range git {
+			if v_git != "" {
+				git_contr = true
+				break
+			}
+		}
+		if git_contr == false {
 			c.Data["giterr"] = "仓库地址不能为空"
-			contr = false
+			contr = git_contr
 		}
-		if sign == "" {
-			c.Data["signerr"] = "唯一标识不能为空"
-			contr = false
-		}
-		if compile == 0 {
+		if compile == "" {
 			c.Data["compileerr"] = "代码标识不能为空"
 			contr = false
 		}
+		//		if compile != "PHP" && compilever == "" {
+		//			c.Data["compileerr"] = "代码标识版本不能为空"
+		//			contr = false
+		//		}
 		userinfo := strings.SplitN(gituser, ":", 2)
 		if gituser != "" && len(userinfo) != 2 || gituser == userinfo[0] {
 			c.Data["gitusererr"] = "格式输入有误"
 			contr = false
 		}
+		if dns != "" && len(dns) > 16 {
+			c.Data["dnserr"] = "格式输入有误"
+			contr = false
+		}
+		tmp_git := utils.GitlisttoString(git)
+		pro := mpro.Project{Id: uint(id)}
+		if readerr := pro.Read(); readerr != nil {
+			beego.Error("动作：数据库操作, 查询项目出错:", readerr)
+		}
 		if contr {
-			pro := mpro.Project{Id: uint(id)}
-			if readerr := pro.Read(); readerr != nil {
-				beego.Error("动作：数据库操作, 查询项目出错:", readerr)
-			}
 			pro.Name = name
-			pro.Sign = sign
-			pro.Git = git
+			pro.Git = tmp_git
 			pro.Gituser = userinfo[0]
 			pro.Gitpass = userinfo[1]
 			pro.Insfile = insfile
-			pro.Compile = utils.GetCompile(compile)
+			pro.Compile = compile
+			pro.Compilever = compilever
+			pro.Sharedpath = sharedpath
+			pro.Dns = dns
 			if proerr := pro.Update(); proerr != nil {
 				beego.Error("动作：数据库操作, 修改项目出错:", proerr)
 			} else {
@@ -176,12 +225,14 @@ func (c *ProController) Edit() {
 			c.Redirect("/prolist", 302)
 		} else {
 			pro := mpro.Project{
-				Name:    name,
-				Sign:    sign,
-				Git:     git,
-				Gituser: gituser,
-				Compile: utils.GetCompile(compile),
-				Insfile: insfile,
+				Name:       name,
+				Git:        tmp_git,
+				Gituser:    gituser,
+				Compile:    compile,
+				Compilever: compilever,
+				Insfile:    insfile,
+				Sharedpath: sharedpath,
+				Dns:        dns,
 			}
 			c.Data["pro"] = &pro
 			c.TplName = "project/project_edit.tpl"
@@ -267,4 +318,30 @@ func (c *ProController) Verlist() {
 	c.Data["json"] = map[string]interface{}{"message": "success", "data": tags}
 	c.ServeJSON()
 	return
+}
+
+func (c *ProController) Wsproject() {
+	ws, err := websocket.Upgrade(c.Ctx.ResponseWriter, c.Ctx.Request, nil, 1024, 1024)
+	if err != nil {
+		beego.Error("websocket 连接创建失败")
+	}
+	t := time.Now().UnixNano()
+	md5id := utils.Md5(fmt.Sprintf("%d", t)) //为保持同一个项目部署的交叉执行,每一个生成不同的目录操作
+	md5id = md5id[:10]
+	utils.Join(md5id, ws)
+	defer utils.Leave(md5id)
+	for {
+		mt, tmp_ms, _ := ws.ReadMessage()
+		beego.Debug("messageType:", mt)
+		beego.Debug("message:", string(tmp_ms))
+		if mt == -1 {
+			beego.Debug("正在尝试关闭当前websocket连接")
+			if err := ws.Close(); err != nil {
+				beego.Info("关闭websocket连接出错：", err)
+			}
+			break
+		}
+
+	} //ws.ReadMessage()
+	beego.Debug("退出项目状态检测")
 }

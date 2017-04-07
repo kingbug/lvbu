@@ -114,12 +114,12 @@ func Makejsonconf(sign, env, ver string, conf map[string]string) error {
 	}
 	path := confidir + "/" + sign
 	if ex, _ := PathExists(path); !ex {
-		beego.Debug("目录不存在")
+		beego.Debug("历史配置目录不存在")
 		if err := os.MkdirAll(path, 0755); err != nil {
 			return errors.New("项目配置目录不存在,尝试创建时出错:" + err.Error())
 		}
 	} else {
-		beego.Debug("目录存在")
+		beego.Debug("历史配置目录存在")
 	}
 	f, ferr := os.Create(confidir + "/" + sign + "/" + env + "_" + ver + ".conf")
 	if ferr != nil {
@@ -131,5 +131,6 @@ func Makejsonconf(sign, env, ver string, conf map[string]string) error {
 	}
 	f.Sync()
 	f.Close()
+	beego.Info("历史配置文件生成成功,文件名：" + confidir + "/" + sign + "/" + env + "_" + ver + ".conf")
 	return nil
 }

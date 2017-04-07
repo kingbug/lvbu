@@ -8,16 +8,32 @@ import (
 type EventType int
 
 const (
-	EVENT_STAT = iota
-	EVENT_ERROR
-	EVENT_MESSAGE
+	EVENT_NODE_STAT   = iota //0状态检测
+	EVENT_PRO_STAT           //1项目状态检测
+	EVENT_ERROR              //2错误
+	EVENT_MESSAGE            //3信息
+	EVENT_UPDATE_NODE        //4部署完成时，容器ID更改，这时，需要主动推给WEB客户端做相应改变
+)
+
+type STATSTYPE int
+
+const (
+	STATS_RUNNING    = iota //0正在运行
+	STATS_RESTARTING        //1正在重启	html 隐式提示
+	STATS_EXIT              //2停止运行	html 黄灯闪烁
+	STATS_EXIST             //3不存在		html 红灯闪烁
 )
 
 type Event struct {
 	Type           EventType
 	Message        string
+	Envsign        string
+	Proid          string
+	Proallnodes    int
+	Prorunnodes    int
+	Nodeid         string
 	Containerid    string
-	Containerstats bool
+	Containerstats STATSTYPE
 	Error          string
 }
 

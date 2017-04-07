@@ -24,7 +24,7 @@ func InitTemplate() {
 	beego.AddFuncMap("Getenv", env.Getenv)
 	beego.AddFuncMap("Getenvidlist", men.GetEnvIdList)
 
-	beego.AddFuncMap("Getmacforenv", mac.GetMacforenv)
+	beego.AddFuncMap("Getmacforenvname", mac.GetMacforenvname)
 
 	beego.AddFuncMap("Getproject", mpro.Getproject)
 	beego.AddFuncMap("Getprofornodecount", mpro.Getprofornodecount)
@@ -32,7 +32,8 @@ func InitTemplate() {
 	beego.AddFuncMap("Getmirgroup", mir.Getmirgroup)
 	beego.AddFuncMap("Getmir", mir.Getmir)
 
-	beego.AddFuncMap("Compilemap", utils.Compilemap)
+	//	beego.AddFuncMap("Compilemap", utils.Compilemap)
+	beego.AddFuncMap("Compilever", utils.Compilever)
 
 	beego.AddFuncMap("Getnode", mpro.Getnode)
 	//	beego.AddFuncMap("getProjectname", projects.GetProjectName)

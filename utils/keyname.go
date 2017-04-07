@@ -34,23 +34,51 @@ func Getsex(status uint) string {
 	return txt
 }
 
-func GetCompile(source int) string {
-	var txt string
-	switch source {
-	case 1:
-		txt = "JAVA"
-	case 2:
-		txt = "PHP"
+//func GetCompile(source int) string {
+//	var txt string
+//	switch source {
+//	case 1:
+//		txt = "JAVASE"
+//	case 2:
+//		txt = "JAVAEE"
+//	case 3:
+//		txt = "PHP"
+//	}
+//	return txt
+//}
+//func Compilemap() map[int]string {
+//	compile := map[int]string{
+//		1: "JAVASE",
+//		2: "JAVAEE",
+//		3: "PHP",
+//	}
+//	return compile
+//}
+
+type JAVAHOME string
+type TAG string
+
+func Compilever() map[string]map[TAG]JAVAHOME {
+	cmpdir := ".profile/"
+	complie := map[string]map[TAG]JAVAHOME{
+		"JAVASE": map[TAG]JAVAHOME{
+			"1.6": JAVAHOME(cmpdir + "jdk1.6.0_45"),
+			"1.7": JAVAHOME(cmpdir + "jdk1.7.0_80/"),
+			"1.8": JAVAHOME(cmpdir + "jdk1.8.0_111/"),
+		},
+		"JAVAEE": map[TAG]JAVAHOME{
+			"1.6":   JAVAHOME(cmpdir + "jdk1.6.0_45"),
+			"1.7":   JAVAHOME(cmpdir + "jdk1.7.0_80/"),
+			"1.8":   JAVAHOME(cmpdir + "jdk1.8.0_111/"),
+			"不需要编译": "",
+		},
+		"PHP": map[TAG]JAVAHOME{
+			"composer":    JAVAHOME(Composerbin), //docker.Composerbin
+			"codeigniter": "web",
+			"不需要安装依赖":     "",
+		},
 	}
-	return txt
-}
-func Compilemap() map[int]string {
-	compile := map[int]string{
-		1: "JAVASE",
-		2: "JAVAEE",
-		3: "PHP",
-	}
-	return compile
+	return complie
 }
 
 func GetNeedsSource(source int) string {

@@ -153,6 +153,12 @@ func Isperitem(name string, uid uint) bool {
 //环境权限验证
 func Isuserper(name string, uid uint) bool {
 	ss := false
+	name = strings.Replace(name, " ", "", -1)
+	name = strings.Replace(name, "\n", "", -1)
+	if name == "" {
+		return false
+	}
+	name = strings.ToUpper(name)
 	err := utils.GetCache("userper."+name+fmt.Sprintf("%d", uid), &ss)
 	if err != nil {
 		var user user.User

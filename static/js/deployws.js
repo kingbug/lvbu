@@ -19,45 +19,75 @@ $(document).ready(function () {
 			}
 			var isexits = true
 			$.each(deadcontainers,function(k, v){
+				console.log("k:" + k)
 				if (v.Containerid == data.Containerid) {
 					if(v.Containerstats != data.Containerstats ){
-						$("#nodelist td." + data.Containerid).find('i.fa-pause').removeClass('fa-pause').addClass('fa-play');
-						$("#nodelist td." + data.Containerid).find('a.pause').removeClass('pause').addClass('play');
-						$("#nodelist td." + data.Containerid).find('i.fa-play').removeClass('fa-play').addClass('fa-pause');
-						$("#nodelist td." + data.Containerid).find('a.play').removeClass('play').addClass('pause');
-						$("#nodelist td." + data.Containerid).parent().removeClass("bg-yellow");
+						if (data.Containerstats == 0) {
+							$("#nodelist td." + data.Containerid).find('i.fa-pause').removeClass('fa-pause').addClass('fa-play');
+							$("#nodelist td." + data.Containerid).find('a.pause').removeClass('pause').addClass('play');
+							$("#nodelist td." + data.Containerid).find('i.fa-play').removeClass('fa-play').addClass('fa-pause');
+							$("#nodelist td." + data.Containerid).find('a.play').removeClass('play').addClass('pause');
+							$("#nodelist td." + data.Containerid).parent().removeClass("bg-yellow");
+						}
+						if (v.Containerstats == 2){ //否则如果之前是不存在状态时
+							$("#nodelist td." + data.Containerid).parent().removeClass("bg-red");
+							var td_a_list = $("." + v.Containerid).children();
+							td_a_list.each(function(k,a){
+								if ($(a).hasClass("rocket") || $(a).hasClass("trash")) {
+									return true; //continue
+								} else {
+									$(a).removeClass("disabled")
+								}
+							});
+						}
+						deadcontainers.splice(k, 1, data);
 					}
-					v.Containerstats = data.Containerstats
+					
 					isexits = false
 					return false// break
 				}
 			});
 			if (isexits == true) {
-				deadcontainers.push(data);
+				deadcontainers.push(data); //添加新值
 			}
-            if (data.Containerstats == false) {//containerid
-				console.log("false");
+			
+			if (data.Containerstats == 0) {
+				
+			} else if (data.Containerstats == 2) {//containerid
+				console.log(data.Containerid + "停止运行");
 				$("#nodelist td." + data.Containerid).find('i.fa-pause').removeClass('fa-pause').addClass('fa-play');
 				$("#nodelist td." + data.Containerid).find('a.pause').removeClass('pause').addClass('play');
-            } else {
-            }
+            } else if (data.Containerstats == 3) {
+				console.log(data.Containerid + "容器不存在");
+            } else if (data.Containerstats == 1) {
+				console.log(data.Containerid + "容器正在重启");
+			}
             break;
-        case 1: // EVENT_ERROR
+        case 2: // EVENT_ERROR
 			if (ms_modal_contr == false){
 				$(".ms_modal").show(1000);
 				ms_modal_contr = true;
 			}
             $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + '<span style=\'color:red;\'>' + data.Error + '</span><br/>')
             break;
-        case 2: // EVENT_MESSAGE
+        case 3: // EVENT_MESSAGE
 			if (ms_modal_contr == false){
 				$(".ms_modal").show(1000);
 				ms_modal_contr = true;
 			}
             $(".ms_modal .box-body").html($(".ms_modal .box-body").html() + data.Message + '<br/>')
             break;
+		case 4: //node_update_container_id
+			nodelist = $("#nodelist tbody tr").find("i.node_id");
+			nodelist.each(function(){
+				if($(this).text() == data.Nodeid){
+					$(this).parent().removeAttr("class");
+					$(this).parent().addClass(data.Containerid);
+				}
+			});
+			break;
         }
-
+		
     };
 	socket.onclose = function (event) {
 		console.log("socket closed");
@@ -71,16 +101,59 @@ $(document).ready(function () {
 		}));
     }
 	
+	//每0.5秒执行一次
 	function flash() {
 		$.each(deadcontainers,function(k, v){
-			if (v.Containerstats) {
+			if (v.Containerstats == 0) {
+				$("#nodelist td." + v.Containerid).find('i.fa-pause').removeClass('fa-pause').addClass('fa-play');
+				$("#nodelist td." + v.Containerid).find('a.pause').removeClass('pause').addClass('play');
+				$("#nodelist td." + v.Containerid).find('i.fa-play').removeClass('fa-play').addClass('fa-pause');
+				$("#nodelist td." + v.Containerid).find('a.play').removeClass('play').addClass('pause');
+				$("#nodelist td." + v.Containerid).parent().removeClass("bg-yellow");
+				if ($("td." + v.Containerid).parent().hasClass("bg-red")) {
+					$("td." + v.Containerid).parent().removeClass("bg-red")
+				}
+				var td_a_list = $("." + v.Containerid).children();
+				td_a_list.each(function(k,a){
+					if ($(a).hasClass("rocket") || $(a).hasClass("trash")) {
+						return true; //continue
+					} else {
+						$(a).removeClass("disabled")
+					}
+				});
 				return true;
+			} else if (v.Containerstats == 2) {
+				if ($("td." + v.Containerid).parent().hasClass("bg-yellow")) {
+					$("td." + v.Containerid).parent().removeClass("bg-yellow")
+				} else {
+					$("td." + v.Containerid).parent().addClass("bg-yellow")
+				}
+			} else if (v.Containerstats == 3) {
+				//var prev_td = $("td." + v.Containerid).prev().prev();
+				//prev_td.text("容器已被删除")
+				var td_a_list = $("." + v.Containerid).children();
+				td_a_list.each(function(k,a){
+					if ($(a).hasClass("rocket") || $(a).hasClass("trash")) {
+						return true;
+					} else {
+						if ($(a).hasClass("disabled")){
+							
+						} else {
+							$(a).addClass("disabled")
+						}
+					}
+				});
+				//改变闪烁颜色
+				if ($("td." + v.Containerid).parent().hasClass("bg-red")) {
+					$("td." + v.Containerid).parent().removeClass("bg-red")
+				} else {
+					$("td." + v.Containerid).parent().addClass("bg-red")
+				}
+				//不存在
+			} else if (v.Containerstats == 1) {
+				//正在重启
 			}
-			if ($("td." + v.Containerid).parent().hasClass("bg-yellow")) {
-				$("td." + v.Containerid).parent().removeClass("bg-yellow")
-			} else {
-				$("td." + v.Containerid).parent().addClass("bg-yellow")
-			}
+			
 		});
 	}
 	

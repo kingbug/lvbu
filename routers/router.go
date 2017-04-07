@@ -34,6 +34,7 @@ func init() {
 	beego.Router("/proadd", &project.ProController{}, "*:Add")
 	beego.Router("/prodel", &project.ProController{}, "post:Del")
 	beego.Router("jproverlist", &project.ProController{}, "post:Verlist")
+	beego.Router("/ws/project", &project.ProController{}, "get:Wsproject")
 	//节点
 	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodelist", &node.NodeController{}, "*:List")
 	beego.Router("/:proid([0-9]+)/:sign(de|qe|oe)/nodedit/:id([0-9]+)", &node.NodeController{}, "*:Edit")

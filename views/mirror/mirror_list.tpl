@@ -383,9 +383,9 @@
 		}
 		
 		
-		input1 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" placeholder=\"" + mir_td1.html() + "\">"
+		input1 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" value=\"" + mir_td1.html() + "\" placeholder=\"" + mir_td1.html() + "\">"
 		$(this).parent().siblings("td:nth-child(1)").html(input1);
-		input2 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" placeholder=\"" + mir_td2.html() + "\">"
+		input2 = "<input type=\"text\" class=\"form-control\" style=\"width:100%\;\" value=\"" + mir_td2.html() + "\" placeholder=\"" + mir_td2.html() + "\">"
 		$(this).parent().siblings("td:nth-child(2)").html(input2);
 		//td1 = $(this).
 		//设置“编辑” ==》 “完成”

@@ -9,16 +9,19 @@ import (
 )
 
 type Project struct {
-	Id      uint      `orm:"pk;auto"` //
-	Name    string    `orm:"size(50);unique"`
-	Sign    string    `orm:"size(50)"`
-	Compile string    `orm:"size(50)"`
-	Git     string    `orm:"size(100)"`
-	Gituser string    `orm:"size(50)"`
-	Gitpass string    `orm:"size(50)"`
-	Insfile string    `orm:"size(500)"`
-	Created time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated time.Time `orm:"auto_now;type(datetime)"`
+	Id         uint      `orm:"pk;auto"` //
+	Name       string    `orm:"size(50);unique"`
+	Sign       string    `orm:"size(50)"`
+	Compile    string    `orm:"size(50)"`
+	Compilever string    `orm:"size(50)"`
+	Git        string    `orm:"type(text)"`
+	Gituser    string    `orm:"size(50)"`
+	Gitpass    string    `orm:"size(50)"`
+	Insfile    string    `orm:"size(500)"`
+	Sharedpath string    `orm:"type(text)"` //容器共享目录 -v
+	Dns        string    `orm:"type(16)"`   //容器DNS，只支持一个
+	Created    time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated    time.Time `orm:"auto_now;type(datetime)"`
 }
 
 func (m *Project) TableName() string {

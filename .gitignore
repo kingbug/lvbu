@@ -2,3 +2,6 @@ conf/app.conf
 prohisconf/
 code/
 conf/*.pem
+.profile/*
+*.exe
+static/.idea

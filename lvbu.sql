@@ -1,38 +1,19 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : 249-lvbv
-Source Server Version : 50717
-Source Host           : 192.168.2.249:3360
+Source Server         : 192.168.2.3
+Source Server Version : 50505
+Source Host           : 192.168.2.3:3306
 Source Database       : lvbu
 
 Target Server Type    : MYSQL
-Target Server Version : 50717
+Target Server Version : 50505
 File Encoding         : 65001
 
-Date: 2017-03-07 16:14:20
+Date: 2017-02-03 09:45:51
 */
 
 SET FOREIGN_KEY_CHECKS=0;
-
--- ----------------------------
--- Table structure for `lvbu_config`
--- ----------------------------
-DROP TABLE IF EXISTS `lvbu_config`;
-CREATE TABLE `lvbu_config` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL DEFAULT '',
-  `dvalue` longtext NOT NULL,
-  `tvalue` longtext NOT NULL,
-  `ovalue` longtext NOT NULL,
-  `dtstatus` int(1) unsigned NOT NULL DEFAULT '0',
-  `tostatus` int(1) unsigned NOT NULL DEFAULT '0',
-  `content` varchar(200) NOT NULL,
-  `created` datetime NOT NULL,
-  `pro_id` int(10) unsigned NOT NULL,
-  `description` varchar(200) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=126 DEFAULT CHARSET=utf8;
 
 
 -- ----------------------------
@@ -56,6 +37,7 @@ INSERT INTO `lvbu_env` VALUES ('2', '测试环境', 'QE', '2017-01-16 14:58:27',
 INSERT INTO `lvbu_env` VALUES ('3', '线上环境', 'OE', '2017-01-16 14:58:27', '2017-01-16 14:58:28');
 
 
+
 -- ----------------------------
 -- Table structure for `lvbu_peritem`
 -- ----------------------------
@@ -66,7 +48,7 @@ CREATE TABLE `lvbu_peritem` (
   `sign` varchar(10) NOT NULL DEFAULT '',
   `menu_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of lvbu_peritem
@@ -90,9 +72,6 @@ INSERT INTO `lvbu_peritem` VALUES ('16', '节点删除', 'nodd', '3');
 INSERT INTO `lvbu_peritem` VALUES ('17', '镜像编辑', 'mire', '6');
 INSERT INTO `lvbu_peritem` VALUES ('18', '镜像添加', 'mira', '6');
 INSERT INTO `lvbu_peritem` VALUES ('19', '镜像删除', 'mird', '6');
-INSERT INTO `lvbu_peritem` VALUES ('20', '配置添加', 'cona', '5');
-INSERT INTO `lvbu_peritem` VALUES ('21', '配置修改', 'cone', '5');
-INSERT INTO `lvbu_peritem` VALUES ('22', '配置删除', 'cond', '5');
 
 -- ----------------------------
 -- Table structure for `lvbu_permenu`
@@ -127,13 +106,13 @@ CREATE TABLE `lvbu_position` (
   `created` datetime NOT NULL,
   `updated` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of lvbu_position
 -- ----------------------------
-INSERT INTO `lvbu_position` VALUES ('1', '运维经理', 'OS', 'inds,pros,proe,proa,prod,nods,node,noda,nodd,macs,mace,maca,macd,cons,cona,cone,cond,mirs,mire,mira,mird,sets,', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
-INSERT INTO `lvbu_position` VALUES ('2', '运维工程师', 'OE', 'inds,proa,prod,nods,node,noda,macs,maca,cons,mirs,sets,', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
+INSERT INTO `lvbu_position` VALUES ('1', '运维经理', 'OS', 'pros,proa,inds,macs,maca,sets,mirs,mira,cons,cona,mace,macd', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
+INSERT INTO `lvbu_position` VALUES ('2', '运维工程师', 'OE', 'inds,proa,macs,maca,cons,mirs,mira,sets,', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
 INSERT INTO `lvbu_position` VALUES ('3', '产品经理', 'PO', 'inds,pros,proe,node,macs,mace,maca,mirs,', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
 INSERT INTO `lvbu_position` VALUES ('4', '项目经理', 'PM', '', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
 INSERT INTO `lvbu_position` VALUES ('5', '研发工程师', 'DE', 'inds,macs', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
@@ -141,6 +120,8 @@ INSERT INTO `lvbu_position` VALUES ('6', '测试工程师', 'QA', 'inds,pros,nod
 INSERT INTO `lvbu_position` VALUES ('8', '运营经理', 'OM', '', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
 INSERT INTO `lvbu_position` VALUES ('9', '运营人员', 'OO', '', '2017-01-09 16:54:17', '2017-01-09 16:54:18');
 INSERT INTO `lvbu_position` VALUES ('10', '设计师', 'DS', '', '2017-01-23 09:30:44', '2017-01-23 09:30:47');
+
+
 
 -- ----------------------------
 -- Table structure for `lvbu_user`
@@ -162,9 +143,10 @@ CREATE TABLE `lvbu_user` (
   `status` int(2) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_name` (`user_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of lvbu_user
 -- ----------------------------
-INSERT INTO `lvbu_user` VALUES ('1', 'root', 'c4ca4238a0b923820dcc509a6f75849b', 'Admin', '1', 'admin@orgtec.cn', '13525574513', 'user4-128x128.jpg', '1', 'DE,QE,OE', '2017-01-09 14:32:22', '2017-02-22 11:41:03', '0');
+INSERT INTO `lvbu_user` VALUES ('1', 'root', 'c4ca4238a0b923820dcc509a6f75849b', '超级管理员', '1', 'root@admin.cn', '11111111111', 'user4-128x128.jpg', '1', 'DE,QE,OE', '2017-01-09 14:32:22', '2018-01-09 00:00:00', '0');
+INSERT INTO `lvbu_user` VALUES ('2', 'guest', 'c4ca4238a0b923820dcc509a6f75849b', '测试', '1', 'guest@admin.cn', '2222222222', 'user4-128x128.jpg', '1', 'DE,QE,OE', '2017-01-09 00:00:00', '2017-01-22 17:25:43', '0');

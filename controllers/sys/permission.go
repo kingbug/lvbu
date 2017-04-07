@@ -5,6 +5,7 @@ import (
 	ctl "lvbu/controllers"
 	mper "lvbu/models/permission"
 	muser "lvbu/models/user"
+	"lvbu/utils"
 
 	"github.com/astaxie/beego"
 )
@@ -39,6 +40,12 @@ func (c *PerController) Post() {
 		per += (k + ",")
 	}
 	pos.Permission = per
-	pos.Update("Permission")
+	if err := pos.Update("Permission"); err != nil {
+		beego.Debug("更新数据出错", err)
+		c.Redirect("/permanage/"+fmt.Sprint(posid), 302)
+	}
+	if err := utils.ClearAll(); err != nil {
+		beego.Debug("清空缓存出错", err)
+	}
 	c.Redirect("/permanage/"+fmt.Sprint(posid), 302)
 }

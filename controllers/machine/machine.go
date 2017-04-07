@@ -6,6 +6,7 @@ import (
 	men "lvbu/models/env"
 	mac "lvbu/models/machine"
 	mper "lvbu/models/permission"
+	"lvbu/utils"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -71,6 +72,8 @@ func (c *MacController) Add() {
 			if err = host.Insert(); err != nil {
 				beego.Debug("动作:添加主机,数据库出错:", err)
 			}
+			host.Env.Read("Sign")
+			utils.Addhost(host.Env.Sign, &host)
 			c.Redirect("/maclist", 302)
 		} else {
 			//记录
@@ -151,6 +154,8 @@ func (c *MacController) Edit() {
 			if err = mach.Update(); err != nil {
 				beego.Error("动作:数据库操作,修改主机信息出错:", err)
 			}
+			mach.Env.Read("Sign")
+			utils.Updatehost(mach.Env.Sign, &mach)
 			//添加操作记录
 			c.Redirect("/maclist", 302)
 		} else {
@@ -206,6 +211,7 @@ func (c *MacController) Del() {
 		beego.Debug("主机信息删除失败:", err)
 		c.Abort("503")
 	}
+	utils.Delhost(sign, &host)
 	//成功返回
 	c.Data["json"] = "success"
 	c.ServeJSON()

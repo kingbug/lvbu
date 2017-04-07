@@ -53,12 +53,20 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="nav-tabs-custom">
-                        <ul class="nav nav-tabs">
-                            <li class="active"><a href="#activity" data-toggle="tab">开发环境</a></li>
-                            <li><a href="#timeline" data-toggle="tab">测试环境</a></li>
-                            <li><a href="#settings" data-toggle="tab">生产环境</a></li>							
+                        <ul class="nav nav-tabs" id="envul" style="display:none">
+							{{if (Isuserper "DE" .uid)}}
+                            	<li class="active"><a href="#activity" class="DE" data-toggle="tab">开发环境</a></li>
+							{{end}}
+                            
+							{{if (Isuserper "QE" .uid)}}
+                            	<li><a href="#timeline" class="QE" data-toggle="tab">测试环境</a></li>
+							{{end}}
+							{{if (Isuserper "OE" .uid)}}
+                            	<li><a href="#settings" class="OE" data-toggle="tab">生产环境</a></li>	
+							{{end}}					
                         </ul>
                         <div class="tab-content">
+							{{if (Isuserper "DE" .uid)}}
                             <div class="active tab-pane" id="activity">
                                 <div class="post">
                                     <div class="box">
@@ -67,7 +75,7 @@
                                         </div>
                                         <!-- /.box-header -->
                                         <div class="box-body">
-                                            <table id="example1" class="table table-bordered table-hover">
+                                            <table id="DE" class="table table-bordered table-hover">
                                                 <thead>
                                                 <tr>
                                                     <th>项目名称</th>
@@ -78,7 +86,7 @@
                                                 </thead>
                                                 <tbody>
 												 {{range Getproject}}
-                                                <tr>
+                                                <tr class="proid{{.Id}}">
                                                     <td>{{.Name}}
 														{{if $.newpro}}
 															{{if eq .Id $.newpro}}
@@ -89,16 +97,12 @@
 														{{end}}
 														
 													</td>
-                                                    <td><span class="label label-success">正常运行</span>
+                                                    <td class="prostat">无可用节点
                                                     </td>
-                                                    <td>
+                                                    <td class="procount">
 														<a href="/{{.Id}}/de/nodelist/" title="点击管理节点">
-														{{with $nodecount := Getprofornodecount .Id}}
-																{{$nodecount}}
-														{{else}}
+														
 																无可用节点
-															
-														{{end}}
 														</a>
 													</td>
                                                     <td>
@@ -133,6 +137,8 @@
                                 </div>
                             </div>
                             <!-- /.tab-pane -->
+							{{end}}
+							{{if (Isuserper "QE" .uid)}}
                             <div class="tab-pane" id="timeline">
                                 <!-- The timeline -->
                                 <div class="post">
@@ -142,7 +148,7 @@
                                         </div>
                                         <!-- /.box-header -->
                                         <div class="box-body">
-                                            <table id="example2" class="table table-bordered table-hover">
+                                            <table id="QE" class="table table-bordered table-hover">
                                                 <thead>
                                                 <tr>
                                                     <th>项目名称</th>
@@ -153,18 +159,14 @@
                                                 </thead>
                                                 <tbody>
 												 {{range Getproject}}
-                                                <tr>
+                                                <tr class="proid{{.Id}}">
                                                     <td>{{.Name}}</td>
-                                                    <td><span class="label label-success">正常运行</span>
+                                                    <td class="prostat">无可用节点
                                                     </td>
-                                                    <td>
+                                                    <td class="procount">
 														<a href="/{{.Id}}/qe/nodelist/" title="点击管理节点">
-														{{with $nodecount := Getprofornodecount .Id}}
-																{{$nodecount}}
-														{{else}}
+														
 																无可用节点
-															
-														{{end}}
 														</a>
 													</td>
                                                     <td>
@@ -210,7 +212,8 @@
                                 </div>
                             </div>
                             <!-- /.tab-pane -->
-
+							{{end}}
+							{{if (Isuserper "OE" .uid)}}
                             <div class="tab-pane" id="settings">
                                 <div class="post">
                                     <div class="box">
@@ -219,8 +222,9 @@
                                         </div>
                                         <!-- /.box-header -->
                                         <div class="box-body">
-                                            <table id="example3" class="table table-bordered table-hover">
+                                            <table id="OE" class="table table-bordered table-hover">
                                                 <thead>
+												
                                                 <tr>
                                                     <th>项目名称</th>
                                                     <th>项目状态</th>
@@ -229,27 +233,21 @@
                                                 </tr>
                                                 </thead>
                                                 <tbody>
-                                                <tr>
-                                                    <td>账户中心</td>
-                                                    <td><span class="label label-success">正常运行</span>
+												{{range Getproject}}
+                                                <tr class="proid{{.Id}}">
+                                                    <td>{{.Name}}</td>
+                                                    <td class="prostat">
+													
+																无可用节点
                                                     </td>
-                                                    <td><a href="/nodelist">5</a></td>
+                                                    <td class="procount">
+														<a href="/{{.Id}}/qe/nodelist/" title="点击管理节点">
+														
+																无可用节点
+														</a>
+													</td>
                                                     <td>
-                                                        <a class="btn">
-                                                            <i class="fa fa-edit">编辑</i>
-                                                        </a>
-                                                        <a class="btn">
-                                                            <i class="fa fa-trash">删除</i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>运营后台</td>
-                                                    <td><span class="label label-warning">运行警告</span>
-                                                    </td>
-                                                    <td><a href="/nodelist">5</a></td>
-                                                    <td>
-														{{if(Isperitem "proe" $.uid)}}
+                                                        {{if(Isperitem "proe" $.uid)}}
                                                         <a class="btn" href="/proedit/{{.Id}}">
                                                             <i class="fa fa-edit">编辑</i>
                                                         </a>
@@ -260,6 +258,7 @@
 														<a class="btn">
                                                             <i class="fa fa-trash">删除</i>
                                                         </a>
+														<i class="id" style="display:none">{{.Id}}</i>
 														</span>
 														{{end}}
 														{{if(Isperitem "cons" $.uid)}}
@@ -267,23 +266,12 @@
                                                             <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
                                                         </a>
 														{{end}}
+														
 														<i class="id" style="display:none">{{.Id}}</i>
+														
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td>接入项目</td>
-                                                    <td><span class="label label-danger">项目异常</span>
-                                                    </td>
-                                                    <td><a href="/nodelist">5</a></td>
-                                                    <td>
-                                                        <a class="btn">
-                                                            <i class="fa fa-edit">编辑</i>
-                                                        </a>
-                                                        <a class="btn">
-                                                            <i class="fa fa-trash">删除</i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
+                                                {{end}}
                                                 </tbody>
                                                 <tfoot>
                                                 <tr>
@@ -300,6 +288,7 @@
                                 </div>
                             </div>
                             <!-- /.tab-pane -->
+							{{end}} <!-- //if OE -->
                         </div>
                         <!-- /.tab-content -->
                     </div>
@@ -358,14 +347,41 @@
 <!-- AdminLTE for demo purposes -->
 <script src="/static/js/demo.js"></script>
 <!-- page script -->
+
 <script>
 
-    var table1 = $('#example1').DataTable();
-    var table2 = $('#example2').DataTable();
-    var table3 = $('#example3').DataTable();
-
+    var table1 = $('#DE').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
+    var table2 = $('#QE').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
+    var table3 = $('#OE').DataTable({
+		"aLengthMenu" : [20, 40, 60],
+		"iDisplayLength" : 40,
+	});
 	
-	
+	nonsocket = function(env) {
+		if (env.hasClass("DE")) {
+			envsign = "DE"
+		} else if (env.hasClass("QE")){
+			envsign = "QE"
+		} else if (env.hasClass("OE")) {
+			envsign = "OE"
+		}
+		if (envsign== ""){
+			console.log("环境标识<空>")
+			return;
+		}
+	}
+	var envsign;
+	$("#envul li a").click(function(){
+		nonsocket($(this));
+		
+	});
+	$("#envul li:first a").click();	
 	$(".rm_pro").click(function(){
 		var pro_id = $(this).find("i.id").text();
 		var mac_name = $(this).parent().siblings("td:nth-child(1)").text();
@@ -375,9 +391,9 @@
 		$(".modal").show(1000);	
 		var tr = $(this).parent().parent();
 		var table;
-		if (tr.parent().parent().attr("id") == "example1") {
+		if (tr.parent().parent().attr("id") == "DE") {
 			table = table1
-		} else if (tr.parent().parent().attr("id") == "example2"){
+		} else if (tr.parent().parent().attr("id") == "QE"){
 			table = table2
 		} else { table = table3}
 		var tr_index = table.row(tr).index();
@@ -422,6 +438,9 @@
 	$("#ver_save").click(function(){
 		abcc();
 	})
+	
 </script>
+<!--务必放在这里 -->
+<script src="/static/js/prolistws.js"></script>
 </body>
 </html>

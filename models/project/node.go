@@ -19,7 +19,7 @@ type Node struct {
 	Port    string       `orm:"size(100)"`
 	Mir     *mir.Mirror  `orm:"rel(fk)"`
 	Mac     *mac.Machine `orm:"rel(fk)"`
-	CurVer  string       `orm:"size(50)"`
+	CurVer  string       `orm:"size(200)"`
 	Created time.Time    `orm:"auto_now_add;type(datetime)"`
 }
 
@@ -69,6 +69,15 @@ func Getnode(proid uint, env_sign string) []*Node {
 		if err := v.Mac.Read(); err != nil {
 			beego.Error("动作:数据库操作,查询节点所属主机出错:", err)
 		}
+	}
+	return node
+}
+
+func (m *Node) GetNodeformac(macid uint) []*Node {
+	var node []*Node
+	//	beego.Debug("开始查询主机", macid, "的所有节点")
+	if _, err := new(Node).Query().Filter("Mac__Id", macid).All(&node, "Id", "Pro", "DocId"); err != nil {
+		beego.Error("动作:数据库操作,查询所属主机所有节点出错:", err)
 	}
 	return node
 }

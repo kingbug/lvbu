@@ -97,3 +97,5 @@ func Getenvid(sign string) uint {
 	}
 	return env.Id
 }
+
+//给定SIGN(OE,QE,DE) 返回所有主机列表

@@ -6,4 +6,6 @@ func init() {
 	InitTemplate()
 	InitCache()
 	InitDocker()
+	InitWebsocket()
+	InitClear()
 }

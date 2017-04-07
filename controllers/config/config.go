@@ -68,7 +68,7 @@ func (c *ConController) Add() {
 	}
 	if new(mcn.Config).Query().Filter("Pro__Id", pro_id).Filter("Name", key).Exist() {
 		//如果同样的项目中已有该key := c.GetString("key"),返回警告
-		c.Data["json"] = "已有相同的KEY" + key
+		c.Data["json"] = map[string]string{"message": "error", "error": "已有相同的KEY" + key}
 		c.ServeJSON()
 		return
 	}
@@ -307,11 +307,11 @@ func (c *ConController) Ignore() {
 }
 
 func (c *ConController) Download() {
-	pro := c.GetString("pro")
+	pro := c.GetString("pro") //PRONAME
 	filetype := c.GetString("filetype")
-	env := c.GetString("env")
-	version := c.GetString("version")
-	line := c.GetString("line")
+	env := c.GetString("env")         //
+	version := c.GetString("version") //PROVERSION
+	line := c.GetString("line")       //空
 	if pro != "" && filetype != "" && env != "" && version != "" {
 		filename := "prohisconf/" + pro + "_" + env + "_" + version + "_" + filetype + ".conf"
 		file, err := utils.GetConf(pro, env, version, filetype, line)

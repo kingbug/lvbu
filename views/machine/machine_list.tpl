@@ -48,7 +48,7 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="nav-tabs-custom">
-                        <ul class="nav nav-tabs">
+                        <ul class="nav nav-tabs"  id="envul">
 						   {{if (Isuserper "DE" .uid)}}
                             <li class="active"><a href="#activity" data-toggle="tab">开发环境</a></li>
 							{{end}}
@@ -240,7 +240,7 @@
                                     </div>
                                 </div>
                             </div>
-							{{end}}                            
+							{{end}} <!-- //if OE -->                           
                         </div>
                         <!-- /.tab-content -->
                     </div>
@@ -306,6 +306,7 @@
     var table1 = $('#example1').DataTable();
     var table2 = $('#example2').DataTable();
     var table3 = $('#example3').DataTable();
+	$("#envul li:first a").click();
 	$(document).ajaxStart(function() { Pace.restart(); });
 	$(".rm_mac").click(function(){
 		$(".modal").show(1000);

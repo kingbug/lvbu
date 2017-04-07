@@ -110,7 +110,7 @@
 											需要初始化
 										{{end}}
                                     </td>
-                                    <td class="ver">Win 95+</td>
+                                    <td class="ver">正在获取...</td>
                                     <td class="{{.DocId}}">
 										<a class="btn rocket">
                                         	<i class="fa fa-rocket"></i>
@@ -273,7 +273,9 @@
 			
 		},
 		error:function(XMLHttpRequest, textStatus, errorThrown) {
-			alert(XMLHttpRequest.status);
+			if (XMLHttpRequest.status != 0) {
+						alert(XMLHttpRequest.status);
+					}
 			if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 				location.href="/503"
 			}
@@ -282,12 +284,21 @@
 	}
 	
 	function loadver(tags) {
-		var verlist = '<select name=\'ver\' class=\'ver\'>'
-		$.each(tags,function(n,value) {   
-			verlist = verlist + '<option value=' + value + '>' + value + '</option>';
+		$("#nodelist").children().find(".ver").html("");
+		var verlist = "";
+		$.each(tags,function(n,value) { 
+			verlist = verlist + '<select name=\'' + n + '\' class=\'ver\'>' 
+			$.each(value, function(k, tag){
+				if (k == 0){
+					verlist = verlist + '<option value=' + tag + '>' + n + '--' + tag + '</option>';
+					return true;
+				}
+				verlist = verlist + '<option value=' + tag + '>' + tag + '</option>';
+			});
+			verlist = verlist + '</select>';
 		});
-		verlist = verlist + '</select>';
-		$("#nodelist").children().find(".ver").html(verlist)
+		$("#nodelist").children().find(".ver").append(verlist);
+		
 	}
 	var abcc = function(){}
 	$("a.trash").click(function(){
@@ -299,6 +310,7 @@
 		$(".modal .modal-body").html("确定删除节点:<b>" + node_name + "</b>, 在主机:<b>" + node_mac+ "</b>");
 		var tr = $(this).parent().parent();
 		var tr_index = table.row(tr).index();
+		console.log("node_id:" + node_id)
 		abcc = function() {
 			$.ajax({
 				url:"/nodedel",
@@ -313,17 +325,19 @@
 						$(".model").hide(1000);
 						return;
 					} else {
-						alert(msg.data);
+						alert(msg.error);
 					}
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
-					alert(XMLHttpRequest.status);
+					if (XMLHttpRequest.status != 0) {
+						alert(XMLHttpRequest.status);
+					}
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
 					}
 				}
-			});
+			});//endajax
 		}
 	});
 		//确认框关闭
@@ -340,10 +354,29 @@
 	})
 	$("table#nodelist").on('click', 'td a.rocket', function(){
 		console.log("Test")
-		var ver = $(this).parent().siblings(".ver").find(".ver").val();
+		var ver_item = $(this).parent().siblings(".ver").find(".ver");
 		var node_id = $(this).siblings(".node_id").text();
-       
-		socket.send(node_id + ":" + ver);
+       	if (typeof(ver_item) == "undefined" || typeof(node_id)== "undefined") {
+			return;
+		}
+		var verlist = "";
+		var ver_contr = true;
+		verlist = node_id;
+		ver_item.each(function(){
+			if ($(this).val() == "" || node_id == "") {
+				ver_contr = false;
+				return false;
+			}
+			//push() 方法可向数组的末尾添加一个或多个元素，并返回新的长度。
+			verlist = verlist + "-" + $(this).attr("name") + "_" + $(this).val();
+			console.log($(this).attr("name") + "_" + $(this).val());
+		});
+		if ( !ver_contr || ver_item.length == 0){
+			return;
+		}
+		//清空实时信息打印框
+		$(".ms_modal .box-body").html(" ");
+		socket.send(verlist);
 		console.log("Test2")
 	});
 	
@@ -388,7 +421,9 @@
 				
 			},
 			error:function(XMLHttpRequest, textStatus, errorThrown) {
-				alert(XMLHttpRequest.status);
+				if (XMLHttpRequest.status != 0) {
+						alert(XMLHttpRequest.status);
+					}
 				if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 					location.href="/503"
 				}

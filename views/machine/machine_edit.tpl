@@ -83,7 +83,7 @@
 								<div class="form-group">
                                     <label for="inputName" class="col-sm-2 control-label">所属环境</label>
                                     <div class="col-sm-10">
-                                        <label for="inputName" class="col-sm-2 control-label">{{ Getmacforenv .mac.Id}}</label>
+                                        <label for="inputName" class="col-sm-2 control-label">{{ Getmacforenvname .mac.Id}}</label>
                                     </div>
                                 </div>                             
                         </div>

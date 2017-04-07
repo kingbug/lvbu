@@ -142,6 +142,10 @@ func DelCache(key string) error {
 	}
 }
 
+func ClearAll() error {
+	return cc.ClearAll()
+}
+
 // --------------------
 // Encode
 // 用gob进行数据编码
