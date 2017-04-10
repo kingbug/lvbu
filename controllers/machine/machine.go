@@ -112,11 +112,11 @@ func (c *MacController) Edit() {
 		contr := true
 		var message string
 		if name == "" {
-			message = "1.主机名不能为空\n"
+			message = "主机名不能为空\n"
 			contr = false
 		}
 		if ipaddr1 == "" && ipaddr2 == "" || adminurl == "" {
-			c.Data["message"] = message + "2.管理地址为空或内外网地址匀为空"
+			c.Data["message"] = message + "管理地址为空或内外网地址匀为空"
 			if err != nil || id == 0 {
 				beego.Info("动作:修改主机信息，id解析出错:", err)
 				c.Redirect("/maclist", 302)
@@ -139,7 +139,7 @@ func (c *MacController) Edit() {
 				c.Data["message"] = "管理地址必须使用内网IP或外网IP其一"
 			}
 		}
-		if !strings.Contains(adminurl, ipaddr1) || !strings.Contains(adminurl, ipaddr2) {
+		if !strings.Contains(adminurl, ipaddr1) && !strings.Contains(adminurl, ipaddr2) {
 			contr = false
 			c.Data["message"] = "管理地址必须使用内网IP或外网IP其一"
 		}
