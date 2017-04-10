@@ -241,7 +241,7 @@
 																无可用节点
                                                     </td>
                                                     <td class="procount">
-														<a href="/{{.Id}}/qe/nodelist/" title="点击管理节点">
+														<a href="/{{.Id}}/oe/nodelist/" title="点击管理节点">
 														
 																无可用节点
 														</a>
