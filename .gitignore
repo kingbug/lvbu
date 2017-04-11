@@ -1,6 +1,6 @@
 conf/app.conf
 prohisconf/
-code/
+code/*/
 conf/*.pem
 .profile/*
 *.exe

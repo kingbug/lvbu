@@ -134,7 +134,7 @@ func Deployover(des string) error {
 }
 
 func InitClear() {
-	dirPth := EXECPATH + ".code"
+	dirPth := EXECPATH + PD + ".code"
 	//os.Chdir(dirPth)
 	dir, err := ioutil.ReadDir(dirPth)
 	if err != nil {

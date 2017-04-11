@@ -90,8 +90,13 @@ func InitDocker() {
 	}
 	file, _ := exec.LookPath(os.Args[0])
 	path, _ := filepath.Abs(file)
-	pathindex := strings.LastIndex(path, PD)
-	EXECPATH = path[:pathindex+1]
+	f, _ := os.Stat(path)
+	if !f.IsDir() {
+		pathindex := strings.LastIndex(path, PD)
+		EXECPATH = path[:pathindex+1]
+	} else {
+		EXECPATH = path
+	}
 }
 
 func Compilecode(compile, compilever, md5path string, message chan string) error {
