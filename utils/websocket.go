@@ -104,14 +104,17 @@ func Updatenode(macid uint, node *mpro.Node) {
 func Delnode(macid uint, node *mpro.Node) {
 	nodelist := nodes[macid]
 	if nodelist == nil {
-		nodes[macid] = []*mpro.Node{node}
+		beego.Error("节点监控信息删除时，出错,列表 为空")
 	} else {
+		var tmp_nodes []*mpro.Node
 		for _, v := range nodes[macid] {
 			if v.Id == node.Id {
 				v = nil
-				break
+				continue
 			}
+			tmp_nodes = append(tmp_nodes, v)
 		}
+		nodes[macid] = tmp_nodes
 	}
 }
 func Leave(id string) {
@@ -175,10 +178,8 @@ func ProDetection() {
 
 						if node.DocId == "" {
 							//beego.Debug("节点Id:", node.Id, "未初始化")
-							mm["all"] = mm["all"] + 1
-							continue
-						}
-						if container.ID == node.DocId {
+							mm["all"] = 1
+						} else if container.ID == node.DocId {
 							mm["all"] = mm["all"] + 1
 							if container.State == "running" {
 								mm["running"] = mm["running"] + 1

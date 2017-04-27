@@ -23,11 +23,14 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 	<style type="text/css">
+	.table>tbody>tr>td.key {
+		max-width:150px;
+	}
 	.table>tbody>tr>td {
 		padding:3px;
 		vertical-align: initial; 
 		font-size: 18px;
-		max-width: 550px;
+		max-width: 300px;
 		overflow:hidden; /* 内容超出宽度时隐藏超出部分的内容 */ 
 	}
 	.input-h-w {
@@ -330,10 +333,10 @@
 												{{range $.conf}}
 													{{if ne .Tostatus 3}} <!--不等于 -->
 													<tr class="oo">
-														<td title="KEY不能修改">
+														<td title="{{.Name}}&#13;KEY不能修改，如必须修改，可以删除后，再添加" class="key">
 															{{.Name}}
 														</td>
-														<td class="" title="{{.Description}}"><!--开发环境只能在开发页面修改-->
+														<td class="" title="{{.Dvalue}}&#13;{{.Description}}"><!--开发环境只能在开发页面修改-->
 														{{if lt .Dtstatus 2}}
 															{{.Dvalue}}
 															{{ if .Dtstatus }}
@@ -363,7 +366,7 @@
 																{{end}} <!--end 配置编辑 权限 验证-->
 																<i class="id" style="display:none">{{.Id}}</i>
 															</td>
-															<td class="value" title="双击修改VALUE">
+															<td class="value" title="{{.Tvalue}}&#13;双击修改VALUE">
 															{{if lt .Dtstatus 3}}
 	                                                        	{{.Tvalue}}
 																{{if .Tostatus }}
@@ -394,7 +397,7 @@
 																{{end}}
 																<i class="id" style="display:none">{{.Id}}</i>
 															</td>
-															<td class="value" title="双击修改VALUE">
+															<td class="value" title="{{.Ovalue}}&#13;双击修改VALUE">
 																{{.Ovalue}}
 															</td>
 														{{end}}<!--生产环境权限验证 end-->

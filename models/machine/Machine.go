@@ -61,6 +61,7 @@ func (m *Machine) Getenvsign() (string, error) {
 		return "", errors.New("Machine.Id为空")
 	}
 	m.Read()
+	m.Env.Read()
 	return m.Env.Sign, nil
 }
 

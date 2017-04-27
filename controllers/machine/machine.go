@@ -6,6 +6,7 @@ import (
 	men "lvbu/models/env"
 	mac "lvbu/models/machine"
 	mper "lvbu/models/permission"
+	mpro "lvbu/models/project"
 	"lvbu/utils"
 	"strings"
 
@@ -205,7 +206,18 @@ func (c *MacController) Del() {
 		c.Abort("500")
 	}
 	if !mper.Isuserper(sign, uid) {
+		beego.Debug("sign:", sign)
 		c.Abort("503")
+	}
+	//判断该主机下是否有被依赖的节点
+	if count, err := new(mpro.Node).Query().Filter("Mac__Id", host.Id).Count(); err != nil {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": err.Error(), "type": 3}
+		c.ServeJSON()
+		return
+	} else if count > 0 {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "<" host.Name + ">主机上有绑定的节点，请清空节点后，再行删除!", "type": 2}
+		c.ServeJSON()
+		return
 	}
 	if err = host.Delete(); err != nil {
 		beego.Debug("主机信息删除失败:", err)
@@ -213,7 +225,7 @@ func (c *MacController) Del() {
 	}
 	utils.Delhost(sign, &host)
 	//成功返回
-	c.Data["json"] = "success"
+	c.Data["json"] = map[string]interface{}{"message": "success", "content": "成功删除主机<" + host.Name + ">", "type": 1}
 	c.ServeJSON()
 	return
 

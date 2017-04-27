@@ -46,6 +46,7 @@ func (c *NodeController) Add() {
 	if enverr := env.Read(); enverr != nil {
 		beego.Error("读取项目信息出错:", enverr)
 	}
+	//获取某一环境下所有主机
 	var macs []mac.Machine
 	if _, macserr := new(mac.Machine).Query().Filter("Env__Id", envid).All(&macs); macserr != nil {
 		beego.Error("macserr", macserr)
@@ -206,6 +207,7 @@ func (c *NodeController) List() {
 	c.Data["pro"] = &pro
 	c.Data["env"] = &env
 	c.Data["nodes"] = &nodes
+	beego.Info(&nodes)
 	c.TplName = "node/node_list.tpl"
 }
 
@@ -343,7 +345,8 @@ func (c *NodeController) Wsdeploy() {
 	t := time.Now().UnixNano()
 	md5path := utils.Md5(fmt.Sprintf("%d", t)) //为保持同一个项目部署的交叉执行,每一个生成不同的目录操作
 	md5path = md5path[:10]
-	var message = make(chan string, 10)
+	var message = make(chan string, 2)
+	var event = make(chan utils.Event, 2)
 	var nodeupdate = make(chan string) //节点的容器ID更改后的容器ID
 	defer ws.Close()
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -381,7 +384,7 @@ func (c *NodeController) Wsdeploy() {
 					}
 				case node_update_docid := <-nodeupdate:
 					beego.Debug("容器id改变...")
-					event := utils.Event{
+					event <- utils.Event{
 						Type:        utils.EVENT_UPDATE_NODE,
 						Nodeid:      strings.Split(node_update_docid, "-")[1],
 						Containerid: strings.Split(node_update_docid, "-")[0],
@@ -392,7 +395,8 @@ func (c *NodeController) Wsdeploy() {
 						beego.Error("Fail to marshal event:", err)
 						continue
 					}
-					if ws.WriteMessage(websocket.TextMessage, data) != nil {
+					if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
+						beego.Error("websocket 写出错:", err)
 					}
 				case isupdate := <-updatestats:
 					if isupdate {
@@ -423,23 +427,26 @@ func (c *NodeController) Wsdeploy() {
 					events, err := utils.Cliinspectcon(tmp_nodes)
 					if err != nil {
 						mes := "检测节点状态出错"
-						var buf bytes.Buffer
-						buf.WriteString(mes)
-						if err := ws.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
-							beego.Error("发送websocket出错:", err)
-						}
+						message <- mes
+						//						var buf bytes.Buffer
+						//						buf.WriteString(mes)
+						//						if err := ws.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
+						//							beego.Error("发送websocket出错:", err)
+						//						}
 						break DONE
 					}
 					beego.Debug("events.len:", len(events))
 
-					for _, event := range events {
-						data, err := json.Marshal(event)
-						if err != nil {
-							beego.Error("Fail to marshal event:", err)
-							continue
-						}
-						if ws.WriteMessage(websocket.TextMessage, data) != nil {
-						}
+					for _, eve := range events {
+						event <- *eve
+						//						data, err := json.Marshal(event)
+						//						if err != nil {
+						//							beego.Error("Fail to marshal event:", err)
+						//							continue
+						//						}
+
+						//						if ws.WriteMessage(websocket.TextMessage, data) != nil {
+						//						}
 					}
 					time.Sleep(5 * time.Second)
 				}
@@ -632,17 +639,19 @@ RECEIVE:
 		for {
 			contron := false
 			select {
-			case mes := <-message:
-				event := utils.Event{
-					Type:    utils.EVENT_MESSAGE,
-					Message: mes,
-				}
-				data, err := json.Marshal(event)
+			case data_event := <-event:
+				data, err := json.Marshal(data_event)
 				if err != nil {
 					beego.Error("序列化EVENT TO json 出错:", err)
 				}
 				if ws.WriteMessage(websocket.TextMessage, data) != nil {
 				}
+			case mes := <-message:
+				event <- utils.Event{
+					Type:    utils.EVENT_MESSAGE,
+					Message: mes,
+				}
+
 				if strings.Contains(mes, "error") {
 					updatestats <- true
 					beego.Debug("处理结束err")

@@ -133,7 +133,7 @@ func (c *ConController) Edit() {
 		conf.Dtstatus = 0
 		conf.Tostatus = 1
 
-	} else if sign == "oe" && conf.Tostatus == 1 {
+	} else if sign == "oe" {
 		conf.Ovalue = value
 		conf.Tostatus = 0
 	} else {
@@ -226,12 +226,12 @@ func (c *ConController) Sync() {
 	var data string
 	if sign == "qe" {
 		per = "测试"
-		if conf.Dtstatus == 2 {
-			conf.Dtstatus = 3
+		if conf.Dtstatus == 2 { //2为开发已删除
+			conf.Dtstatus = 3 //3为测试删除状态
 			conf.Tostatus = 1 //告诉生产环境，有改动
 		} else if conf.Dtstatus == 1 {
 			conf.Tvalue = conf.Dvalue
-			conf.Dtstatus = 0
+			conf.Dtstatus = 0 //改为无状态
 			conf.Tostatus = 1
 			data = conf.Dvalue
 		}
@@ -239,7 +239,7 @@ func (c *ConController) Sync() {
 	} else if sign == "oe" {
 		per = "运维"
 		if conf.Dtstatus == 3 {
-			conf.Tostatus = 3
+			conf.Tostatus = 3 //线上环境删除
 		} else if conf.Tostatus == 1 {
 			conf.Ovalue = conf.Tvalue
 			conf.Tostatus = 0

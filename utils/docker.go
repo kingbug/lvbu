@@ -162,7 +162,7 @@ func PullImage(image string, message chan string) (bool, error) {
 	message <- "准备pull image:" + image + " ..."
 	var buferr bytes.Buffer
 	beego.Debug("准备pull image:", image)
-	bash := exec.Command(dockerbin, "pull", image)
+	bash := exec.Command("/bin/bash", "-c", dockerbin+" pull "+image)
 	bash.Stderr = &buferr
 	//	stdout, err := bash.StdoutPipe()
 	//	if err != nil {
@@ -243,7 +243,6 @@ func BuildImage(node *mpro.Node, version []string, md5path []string, insfile str
 	beego.Debug("gitname:", gitname)
 	dockerfile_str := "FROM " + mirr.Hubaddress + "\n" +
 		addprocode +
-		"ENV LANG=en_US.UTF-8 \n" +
 		"ENV TZ=Asia/Shanghai \n" +
 		"ENV CONFIGPROTOCOL  " + configprocotol + "\n" + //项目名
 		"ENV CONFIGURL  " + configurl + "\n" + //项目名
