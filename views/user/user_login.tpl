@@ -33,11 +33,11 @@
   <div class="login-box-body">
     <form action="/login" method="post">
       <div class="form-group has-feedback">
-        <input type="text" name="username" class="form-control" placeholder="帐号"  value="liningjiang">
+        <input type="text" name="username" class="form-control" placeholder="帐号"  value="">
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input type="password" name="passwd" class="form-control" placeholder="密码" value="1">
+        <input type="password" name="passwd" class="form-control" placeholder="密码" value="">
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
       <div class="row">

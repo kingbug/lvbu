@@ -183,6 +183,9 @@ func (c *MirController) JQmirr() {
 		//err := mirs.Query().Filter("Id", mirid).One(&mirs)
 		if err != nil {
 			beego.Error("查询镜像时出错:", err.Error())
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "数据库出错:" + err.Error(), "type": 2}
+			c.ServeJSON()
+			return
 		}
 
 		beego.Debug("JS请求更新前镜像,", mirs)
@@ -191,13 +194,13 @@ func (c *MirController) JQmirr() {
 		beego.Debug("JS请求更新镜像,name:", mirs.Name, ", hubaddress:", mirs.Hubaddress)
 		mirs.Update()
 		beego.Debug(mirs)
-		c.Data["json"] = "success"
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "成功更新信息镜像", "type": 1}
 		c.ServeJSON()
 		return
 
 	} else {
 		beego.Error(err.Error())
-		c.Data["json"] = nil
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "传参错误", "type": 3}
 		c.ServeJSON()
 		return
 	}
@@ -217,16 +220,16 @@ func (c *MirController) JQrmmirr() {
 		mirs.Id = uint(mirid)
 		beego.Debug("删除镜像Id:", mirid)
 		if err := mirs.Delete(); err != nil {
-			c.Data["json"] = err.Error()
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "数据库出错:" + err.Error(), "type": 2}
 			c.ServeJSON()
 			return
 		}
-		c.Data["json"] = "success"
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "成功删除镜像", "type": 1}
 		c.ServeJSON()
 		return
 
 	} else {
-		c.Data["json"] = nil
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "传参错误", "type": 3}
 		c.ServeJSON()
 		return
 	}

@@ -55,6 +55,20 @@
     </style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<nav class="navbar navbar-fixed-top" style="z-index: 1031; display:none;">
+
+  <div class="container">
+
+   <div class="alert alert-warning">
+	<a href="#" class="close" data-dismiss="alert">
+		×
+	</a>
+	<strong>警告！</strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>您的网络连接有问题。<span>
+</div>
+
+  </div>
+
+</nav>
 <span style="display:none" class="pro_id">{{.pro.Id}}</span>
 <span style="display:none" class="env_sign">{{.env.Sign}}</span>
 <div class="wrapper">
@@ -264,17 +278,17 @@
 		dataType: "json",
 		success: function(msg) {
 			if (msg.message == "success"){
-				console.log(msg.data);
-				loadver(msg.data); 
+				console.log(msg.content);
+				loadver(msg.content); 
 				return;
 			} else {
-				alert(msg.error);
+				alertmessage(msg.type,msg.content);
 			}
 			
 		},
 		error:function(XMLHttpRequest, textStatus, errorThrown) {
 			if (XMLHttpRequest.status != 0) {
-						alert(XMLHttpRequest.status);
+						alertmessage(3,XMLHttpRequest.status);
 					}
 			if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 				location.href="/503"
@@ -323,15 +337,16 @@
 					if (msg.message == "success"){
 						table.row(tr_index).remove().draw( false );
 						$(".model").hide(1000);
+						alertmessage(msg.type,msg.content);
 						return;
 					} else {
-						alert(msg.error);
+						alertmessage(msg.type,msg.content);
 					}
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
 					if (XMLHttpRequest.status != 0) {
-						alert(XMLHttpRequest.status);
+						alertmessage(3,XMLHttpRequest.status);
 					}
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
@@ -412,17 +427,17 @@
 			dataType: "json",
 			success: function(msg) {
 				if (msg.message == "success"){
-					console.log(msg.data);
-					alert(msg.data);
+					console.log(msg.content);
+					alertmessage(msg.type,msg.content);
 					return;
 				} else {
-					alert(msg.data);
+					alertmessage(msg.type,msg.content);
 				}
 				
 			},
 			error:function(XMLHttpRequest, textStatus, errorThrown) {
 				if (XMLHttpRequest.status != 0) {
-						alert(XMLHttpRequest.status);
+						alertmessage(3, XMLHttpRequest.status);
 					}
 				if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 					location.href="/503"
@@ -430,7 +445,37 @@
 			}
 		});
 	});
-
+	var t1;
+	function alertmessage(type,content) {
+		$(".navbar-fixed-top").show(1000);
+		alertd = $("nav.navbar").children(".container").children(".alert");
+		switch(type)
+		{
+			case 1://完成
+				alertd.removeClass("alert-warning").removeClass("alert-error").addClass("alert-success");
+				alertd.find("strong").text("成功!");
+				break;
+			case 2://警告
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("警告!");
+				break;
+			case 3://错误
+				alertd.removeClass("alert-success").removeClass("alert-warning").addClass("alert-error");
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("错误!");
+				break;
+			default:
+				break;
+		}
+		
+		alertd.find("span").text(content);
+		window.clearTimeout(t1);
+		t1 = window.setTimeout("$('.alert').click();",5000);
+	}
+	
+	$(".alert").click(function(){
+		$(".navbar-fixed-top").hide(1000);
+	});
 </script>
 <!-- deploy websocket 务必放到最后面--> 
 <script src="/static/js/deployws.js"></script>

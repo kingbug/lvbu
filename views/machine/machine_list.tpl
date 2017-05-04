@@ -350,12 +350,12 @@
 						$("#ver_break").click();
 						
 					}
-					alertmessage(msg.type,msg.content)
+					alertmessage(msg.type,msg.content);
 					return;
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
-					alert(XMLHttpRequest.status);
+					alertmessage(msg.type,XMLHttpRequest.status);
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
 					}
@@ -375,6 +375,7 @@
 	$("#ver_save").click(function(){
 		abcc();
 	})
+	
 	var t1;
 	function alertmessage(type,content) {
 		$(".navbar-fixed-top").show(1000);

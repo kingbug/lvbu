@@ -346,7 +346,7 @@ func (c *NodeController) Wsdeploy() {
 	md5path := utils.Md5(fmt.Sprintf("%d", t)) //为保持同一个项目部署的交叉执行,每一个生成不同的目录操作
 	md5path = md5path[:10]
 	var message = make(chan string, 2)
-	var event = make(chan utils.Event, 2)
+	var event = make(chan utils.Event, 3)
 	var nodeupdate = make(chan string) //节点的容器ID更改后的容器ID
 	defer ws.Close()
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -383,21 +383,21 @@ func (c *NodeController) Wsdeploy() {
 						break DONE
 					}
 				case node_update_docid := <-nodeupdate:
-					beego.Debug("容器id改变...")
+					beego.Debug("容器id改变...", nodeupdate)
 					event <- utils.Event{
 						Type:        utils.EVENT_UPDATE_NODE,
 						Nodeid:      strings.Split(node_update_docid, "-")[1],
 						Containerid: strings.Split(node_update_docid, "-")[0],
 					}
 
-					data, err := json.Marshal(event)
-					if err != nil {
-						beego.Error("Fail to marshal event:", err)
-						continue
-					}
-					if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
-						beego.Error("websocket 写出错:", err)
-					}
+					//					data, err := json.Marshal(event)
+					//					if err != nil {
+					//						beego.Error("Fail to marshal event:", err)
+					//						continue
+					//					}
+					//					if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
+					//						beego.Error("websocket 写出错:", err)
+					//					}
 				case isupdate := <-updatestats:
 					if isupdate {
 						for _, v := range tmp_nodes {
@@ -664,8 +664,7 @@ RECEIVE:
 				}
 			}
 			if contron {
-				beego.Error("message 循环已退出0")
-				break
+				beego.Info("处理完成")
 			}
 		}
 		beego.Info("message 循环已退出00")
@@ -692,40 +691,40 @@ func (c *NodeController) Jnodeopera() {
 	}
 	if err := node.Read(); err != nil {
 		beego.Error(err)
-		c.Data["json"] = map[string]string{"message": "error", "data": err.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "读取节点信息失败:" + err.Error(), "type": 3}
 		c.ServeJSON()
 		return
 	}
 	if err := node.Mac.Read(); err != nil {
 		beego.Error(err)
-		c.Data["json"] = map[string]string{"message": "error", "data": err.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "查询节点依赖主机失败：" + err.Error(), "type": 3}
 		c.ServeJSON()
 		return
 	}
 	if node.DocId == "" {
 		beego.Error("容器ID为空")
-		c.Data["json"] = map[string]string{"message": "error", "data": "容器ID为空"}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "容器ID为空", "type": 2}
 		c.ServeJSON()
 		return
 	}
 
 	if signal == "START" {
 		if err := utils.Clistartcon(node.Mac.Adminurl, node.DocId); err != nil {
-			c.Data["json"] = map[string]string{"message": "error", "data": err.Error()}
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": err.Error(), "type": 2}
 		} else {
-			c.Data["json"] = map[string]string{"message": "success", "data": "成功"}
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "启动成功", "type": 1}
 		}
 	} else if signal == "STOP" {
 		if err := utils.Clistopcon(node.Mac.Adminurl, node.DocId); err != nil {
-			c.Data["json"] = map[string]string{"message": "error", "data": err.Error()}
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": err.Error(), "type": 2}
 		} else {
-			c.Data["json"] = map[string]string{"message": "success", "data": "成功"}
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "停止成功", "type": 1}
 		}
 	} else if signal == "RESTART" {
 		if err := utils.Clirestartcon(node.Mac.Adminurl, node.DocId); err != nil {
-			c.Data["json"] = map[string]string{"message": "error", "data": err.Error()}
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": err.Error(), "type": 2}
 		} else {
-			c.Data["json"] = map[string]string{"message": "success", "data": "成功"}
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "重启成功", "type": 1}
 		}
 	}
 	c.ServeJSON()

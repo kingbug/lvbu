@@ -147,3 +147,8 @@ func (m *Machine) GetMacforenv(sign string) []*Machine {
 	}
 	return macs
 }
+
+func Count() int64 {
+	count, _ := new(Machine).Query().Count()
+	return count
+}

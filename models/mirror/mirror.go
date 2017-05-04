@@ -73,3 +73,8 @@ func Getmir(groupid uint) ([]*Mirror, error) {
 	}
 	return mirs, nil
 }
+
+func Count() int64 {
+	count, _ := new(Mirror).Query().Count()
+	return count
+}

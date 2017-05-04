@@ -366,15 +366,13 @@
 			if (mir_td1input=="" && mir_td2input==""){$(this).children("a").children("i").text("编辑");mir_td1.html(mir_td1text);mir_td2.html(mir_td2text);edit_status="true";return;}
 			if (mir_td1input==""){mir_td1input=mir_td1text}
 			if (mir_td2input==""){mir_td2input=mir_td2text}
-			$.get("jqmirr?mirid=" + mir_id + "&mirname="+ mir_td1input + "&mirhubaddress=" + mir_td2input, function(data,status){
-				alert("status:" +status)
+			$.get("jqmirr?mirid=" + mir_id + "&mirname="+ mir_td1input + "&mirhubaddress=" + mir_td2input, function(msg,status){
 				if (status == "success"){
-					if (data == "success"){
-						
+					if (msg.message == "success"){
 						mir_td1.html(mir_td1input)
 						mir_td2.html(mir_td2input)
-						
-					}else {alert("出错了，返回数据data:" + data); return;}
+						alertmessage(msg.type,msg.content+ '"' + mir_td1input + '"')
+					}else {alertmessage(msg.type, msg.content); return;}
 				}
 			})
 			edit_status="true"
@@ -409,26 +407,18 @@
 		$(".modal").show();
 		$(".verify-modal").find(".modal-title").html("你好")
 		abcc = function (){
-			$.get("/jqrmmir?mirid=" + mir_id, function(data, status){
+			$.get("/jqrmmir?mirid=" + mir_id, function(msg, status){
 				if (status == "success"){
-					if (data == "success"){
+					if (msg.message == "success"){
 						$("#ver_close").click();
 						refreshgroup();
+						alertmessage(msg.type,msg.content+ '"' + mir_td1.html() + '"');
 						return;
 					}else {
-						$(".verify-modal").find(".modal-title").html("警告")
-						$(".verify-modal").find(".modal-body").html("服务器出错,返回数据data:" + data);
-						abcc = function(){
-							$("#ver_close").click();
-						}
+						alertmessage(msg.type,msg.content);
 					}
 				}else {
-					alert("aaaaaaaaaa")
-					$(".verify-modal").find(".modal-title").html("警告")
-					$(".verify-modal").find(".modal-body").html("网络问题,statuscode:" + status);
-					abcc = function(){
-						$("#ver_close").click();
-					}
+					alertmessage(3 ,'错误:'+status);
 				}
 			})
 		}
@@ -499,6 +489,41 @@
 		
 		
 	})
+	$("body").prepend('<nav class="navbar navbar-fixed-top" style="z-index: 1031; display:none;">' +
+		'<div class="container"><div class="alert alert-warning"> '+
+		'<a href="#" class="close" data-dismiss="alert">×</a>'+
+		'<strong>警告！</strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>您的网络连接有问题。<span></div></div></nav>');
+	var t1;
+	function alertmessage(type,content) {
+		$(".navbar-fixed-top").show(1000);
+		alertd = $("nav.navbar").children(".container").children(".alert");
+		switch(type)
+		{
+			case 1://完成
+				alertd.removeClass("alert-warning").removeClass("alert-error").addClass("alert-success");
+				alertd.find("strong").text("成功!");
+				break;
+			case 2://警告
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("警告!");
+				break;
+			case 3://错误
+				alertd.removeClass("alert-success").removeClass("alert-warning").addClass("alert-error");
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("错误!");
+				break;
+			default:
+				break;
+		}
+		
+		alertd.find("span").text(content);
+		window.clearTimeout(t1);
+		t1 = window.setTimeout("$('.alert').click();",5000);
+	}
+	
+	$(".alert").click(function(){
+		$(".navbar-fixed-top").hide(1000);
+	});
 </script>
 </body>
 </html>

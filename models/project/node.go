@@ -81,3 +81,8 @@ func (m *Node) GetNodeformac(macid uint) []*Node {
 	}
 	return node
 }
+
+func NodeCount() int64 {
+	count, _ := new(Node).Query().Count()
+	return count
+}

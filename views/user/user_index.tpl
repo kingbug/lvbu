@@ -47,7 +47,7 @@
             <span class="info-box-icon bg-aqua"><i class="fa fa-rebel"></i></span>
             <div class="info-box-content">
               <span class="info-box-text">容器个数</span>
-              <span class="info-box-number">190</span>
+              <span class="info-box-number">{{ .node_count}}</span>
             </div>
             <!-- /.info-box-content -->
           </div>
@@ -60,7 +60,7 @@
 
             <div class="info-box-content">
               <span class="info-box-text">主机个数</span>
-              <span class="info-box-number">30</span>
+              <span class="info-box-number">{{ .mac_count }}</span>
             </div>
             <!-- /.info-box-content -->
           </div>
@@ -77,7 +77,7 @@
 
             <div class="info-box-content">
               <span class="info-box-text">镜像个数</span>
-              <span class="info-box-number">56</span>
+              <span class="info-box-number">{{ .mirror_count }}</span>
             </div>
             <!-- /.info-box-content -->
           </div>
@@ -90,7 +90,7 @@
 
             <div class="info-box-content">
               <span class="info-box-text">用户数</span>
-              <span class="info-box-number">2,0</span>
+              <span class="info-box-number">{{ .user_count }}</span>
             </div>
             <!-- /.info-box-content -->
           </div>

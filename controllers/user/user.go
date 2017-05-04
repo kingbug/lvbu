@@ -4,7 +4,10 @@ import (
 	"fmt"
 	//"fmt"
 	ctl "lvbu/controllers"
+	mac "lvbu/models/machine"
+	mir "lvbu/models/mirror"
 	mper "lvbu/models/permission"
+	mpro "lvbu/models/project"
 	muser "lvbu/models/user"
 	"lvbu/utils"
 
@@ -52,6 +55,18 @@ func (c *UserLoginController) Post() {
 }
 func (c *UserController) Index() {
 	c.Data["uid"] = c.GetSession("uid")
+	//获取容器个数
+	node_count := mpro.NodeCount()
+	//获取主机个数
+	mac_count := mac.Count()
+	//获取镜像个数
+	mirror_count := mir.Count()
+	//获取用户个数
+	user_count := muser.Count()
+	c.Data["user_count"] = user_count
+	c.Data["mirror_count"] = mirror_count
+	c.Data["mac_count"] = mac_count
+	c.Data["node_count"] = node_count
 	c.TplName = "user/user_index.tpl"
 }
 func (c *UserController) Profile() {

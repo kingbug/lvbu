@@ -266,13 +266,13 @@ func (c *ProController) Del() {
 
 	if err := pro.Delete(); err != nil {
 		beego.Debug("project:", pro, "err:", err)
-		c.Data["json"] = err.Error()
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "出错:<" + err.Error() + ">", "type": 2}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
 		beego.Info("删除项目:{Id :", id, "}")
-		c.Data["json"] = "success" //OK
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "删除成功!", "type": 1} //OK
 		c.ServeJSON()
 		return
 	}
@@ -291,18 +291,18 @@ func (c *ProController) Verlist() {
 	pro.Id = uint(id)
 	if err := pro.Read(); err != nil {
 		beego.Error("动作:数据库操作,查询项目出错:", err)
-		c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "查询所属项目出错:" + err.Error(), "type": 3}
 		c.ServeJSON()
 		return
 	} else {
 		row, err := new(mpro.Node).Query().Filter("Pro__Id", pro.Id).Count()
 		if err != nil {
 			beego.Error("动作:数据库操作,查询项目节点异常error:", err, "row:", row)
-			c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "查询兄弟节点数量出错:" + err.Error(), "type": 3}
 			c.ServeJSON()
 			return
 		} else if row < 1 {
-			c.Data["json"] = map[string]interface{}{"message": "success", "data": []string{"无可能节点"}}
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": []string{"无可用节点"}, "type": 1}
 			c.ServeJSON()
 			return
 		}
@@ -311,11 +311,11 @@ func (c *ProController) Verlist() {
 	tags, err := utils.GitTags(pro.Git)
 	if err != nil {
 		beego.Error("error:", err)
-		c.Data["json"] = map[string]interface{}{"message": "error", "error": err.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": err.Error(), "type": 2}
 		c.ServeJSON()
 		return
 	}
-	c.Data["json"] = map[string]interface{}{"message": "success", "data": tags}
+	c.Data["json"] = map[string]interface{}{"message": "success", "content": tags, "type": 1}
 	c.ServeJSON()
 	return
 }

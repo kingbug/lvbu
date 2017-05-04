@@ -215,7 +215,7 @@ func (c *MacController) Del() {
 		c.ServeJSON()
 		return
 	} else if count > 0 {
-		c.Data["json"] = map[string]interface{}{"message": "error", "content": "<" host.Name + ">主机上有绑定的节点，请清空节点后，再行删除!", "type": 2}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "<" + host.Name + ">主机上有绑定的节点，请清空节点后，再行删除!", "type": 2}
 		c.ServeJSON()
 		return
 	}

@@ -87,3 +87,8 @@ func Getposname(id uint) string {
 	}
 	return pos
 }
+
+func Count() int64 {
+	count, _ := new(User).Query().Count()
+	return count
+}

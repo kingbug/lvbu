@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"io"
@@ -346,22 +345,12 @@ func PushImages(giturl string, version []string, message chan string) error {
 	bash := exec.Command(dockerbin, "push", dockerregsitry+"/"+strings.ToLower(containername)+":"+strings.ToLower(VerlisttoString(version)))
 	bash.Stdout = os.Stdout
 	bash.Stderr = &buferr
-	//	if stdouterr != nil {
-	//		beego.Info("Error:", stdouterr)
-	//	}
+
 	if starterr := bash.Run(); starterr != nil {
 		beego.Error("上传镜像出错:", starterr, buferr.String())
 		return errors.New(starterr.Error() + buferr.String())
 	}
-	//	reader := bufio.NewReader(stdout)
-	//	for {
-	//		line, err2 := reader.ReadString('\n')
-	//		if err2 != nil || io.EOF == err2 {
-	//			break
-	//		}
-	//		message <- line
-	//	}
-	//	bash.Wait()
+
 	Delimage(dockerregsitry+"/"+strings.ToLower(containername), strings.ToLower(VerlisttoString(version)), message) //这个不做正常运行标识
 	if bash.ProcessState.Success() {
 		message <- "上传镜像完成"
@@ -377,27 +366,17 @@ func Delimage(image, node_ver string, message chan string) error {
 	message <- "准备删除缓冲镜像" + image
 	bash := exec.Command("bash", "-c", dockerbin+" rmi `"+dockerbin+" images |grep "+image+" | grep "+node_ver+" | awk '{ print $3 }'`")
 	beego.Debug("`"+dockerbin, "images", "|grep", image, "|awk", "'{", "print", "$3", "}'`")
-	stdout, outerr := bash.StdoutPipe()
-	bash.Stderr = os.Stdout
-	if outerr != nil {
-		beego.Info("Error:", outerr)
+	bash.Stdout = os.Stdout
+	var buferr bytes.Buffer
+	bash.Stderr = &buferr
+	if starterr := bash.Run(); starterr != nil {
+		beego.Error("删除镜像出错:", starterr, buferr.String())
+		return errors.New(starterr.Error() + buferr.String())
 	}
-	if starterr := bash.Start(); starterr != nil {
-		beego.Error("删除镜像出错:", starterr)
-		return starterr
-	}
-	readout := bufio.NewReader(stdout)
-	for {
-		line, err2 := readout.ReadString('\n')
-		if err2 != nil || io.EOF == err2 {
-			break
-		}
 
-		message <- line
-	}
-	bash.Wait()
 	if bash.ProcessState.Success() {
-		message <- "删除缓冲镜像" + image + "成功"
+		beego.Info("删除缓存镜像成功")
+		message <- "删除缓存镜像" + image + "成功"
 		return nil
 	} else {
 		beego.Error("删除缓冲镜像出错", bash.ProcessState.String())
@@ -608,49 +587,6 @@ func Clipullimage(adminurl, giturl, tag string, message chan string) error {
 		message <- "客户端PULL IMAGE" + repository + ":" + tag + "完成"
 		return nil
 	}
-	//	go func() {
-	//		if err = client.PullImage(pullopts, auth); err != nil {
-	//			beego.Error(" 客户端PULL IMAGE 出错：", err)
-	//			contr <- err
-	//		} else {
-	//			contr <- nil
-	//		}
-	//	}()
-	//	var delim byte = '\n'
-	//	for {
-	//		contron := false
-	//		select {
-	//		case pullerr := <-contr:
-	//			beego.Error(pullerr)
-	//			return pullerr
-
-	//		default:
-	//			if buf.Len() == 0 {
-	//				continue
-	//			}
-	//			line, err := buf.ReadString(delim)
-
-	//			if err != nil {
-	//				if err == io.EOF {
-	//					continue
-	//				}
-	//				beego.Info("for break")
-	//				contron = true
-	//			}
-	//			message <- line
-	//			if strings.Contains(line, "Status") {
-	//				contron = true
-	//			}
-	//		}
-	//		if contron {
-	//			beego.Info("真正break")
-	//			break
-	//		}
-
-	//	}
-
-	//	beego.Info("结束 循环")
-	//	return <-contr
 }
 
 ////主机正在运行的容器列表
