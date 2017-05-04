@@ -373,6 +373,7 @@ func (c *NodeController) Wsdeploy() {
 				}
 				tmp_nodes = append(tmp_nodes, node)
 			}
+			errtype := 0
 		DONE:
 			for {
 
@@ -389,15 +390,6 @@ func (c *NodeController) Wsdeploy() {
 						Nodeid:      strings.Split(node_update_docid, "-")[1],
 						Containerid: strings.Split(node_update_docid, "-")[0],
 					}
-
-					//					data, err := json.Marshal(event)
-					//					if err != nil {
-					//						beego.Error("Fail to marshal event:", err)
-					//						continue
-					//					}
-					//					if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
-					//						beego.Error("websocket 写出错:", err)
-					//					}
 				case isupdate := <-updatestats:
 					if isupdate {
 						for _, v := range tmp_nodes {
@@ -426,27 +418,18 @@ func (c *NodeController) Wsdeploy() {
 				default:
 					events, err := utils.Cliinspectcon(tmp_nodes)
 					if err != nil {
-						mes := "检测节点状态出错"
-						message <- mes
-						//						var buf bytes.Buffer
-						//						buf.WriteString(mes)
-						//						if err := ws.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
-						//							beego.Error("发送websocket出错:", err)
-						//						}
-						break DONE
+						mes := "未检测到节点状态" + err.Error()
+						if errtype == 0 {
+							message <- mes
+							errtype = 1
+						}
+
 					}
 					beego.Debug("events.len:", len(events))
 
 					for _, eve := range events {
 						event <- *eve
-						//						data, err := json.Marshal(event)
-						//						if err != nil {
-						//							beego.Error("Fail to marshal event:", err)
-						//							continue
-						//						}
 
-						//						if ws.WriteMessage(websocket.TextMessage, data) != nil {
-						//						}
 					}
 					time.Sleep(5 * time.Second)
 				}
@@ -456,9 +439,44 @@ func (c *NodeController) Wsdeploy() {
 
 	}()
 
+	go func() {
+		for {
+			contron := false
+			select {
+			case data_event := <-event:
+				data, err := json.Marshal(data_event)
+				if err != nil {
+					beego.Error("序列化EVENT TO json 出错:", err)
+				}
+				if err := ws.WriteMessage(websocket.TextMessage, data); err != nil {
+					beego.Error("websocket写入出错:", err.Error())
+				}
+			case mes := <-message:
+				event <- utils.Event{
+					Type:    utils.EVENT_MESSAGE,
+					Message: mes,
+				}
+				if strings.Contains(mes, "error") {
+					updatestats <- true
+					beego.Info("处理结束error")
+					contron = true
+				}
+				if mes == "success" {
+					updatestats <- true
+					beego.Info("处理结束success")
+					contron = true
+				}
+			}
+			if contron {
+				beego.Info("处理完成")
+			}
+		}
+	}()
+
 RECEIVE:
 	//tmp_ms: example 90:v8.8.8
 	for {
+		var deploycon = make(chan bool)
 		mt, tmp_ms, _ := ws.ReadMessage()
 		beego.Debug("messageType:", mt)
 		beego.Debug("message:", tmp_ms)
@@ -550,7 +568,6 @@ RECEIVE:
 		go func() { //部署容器
 			var comperr error
 			comperr = nil
-			contr := true
 			//copy 项目到活动目录 .code
 			//本次活动目录
 			path := utils.EXECPATH
@@ -566,19 +583,24 @@ RECEIVE:
 
 			if ok := utils.Gitchecver(node.Pro.Git, node_ver, message); !ok {
 				comperr = errors.New("仓库切换tag 出错")
+				message <- "仓库切换 tag 出错"
+			}
+			if err := utils.ComposerInstallorUpdate(node.Pro.Git, node.Pro.Compile, node.Pro.Compilever, message); err != nil {
+
+				comperr = err
 			}
 			for k, v := range pro_path {
 				if err := utils.Copypath(v, tmp_pro_path[k], ".git"); err != nil {
 					message <- "copy 临时目录出错:" + err.Error()
 					comperr = errors.New("copy 临时目录出错:" + err.Error())
 				} else if err := utils.Compilecode(node.Pro.Compile, node.Pro.Compilever, tmp_pro_path[k], message); err != nil {
-					message <- "编译代码失败, error:" + err.Error()
-					comperr = errors.New("编译代码失败, error:" + err.Error())
+					message <- "编译代码失败," + err.Error()
+					comperr = errors.New("编译代码失败," + err.Error())
 				}
 			}
 
 			if comperr != nil {
-				message <- comperr.Error()
+				beego.Info(comperr)
 			} else if err := utils.BuildImage(&node, node_ver, tmp_pro_path, node.Pro.Insfile, message); err != nil { //BuildImage
 				message <- "镜像BUILD失败,error:" + err.Error()
 				//build失败需要删除<none>镜像
@@ -592,7 +614,8 @@ RECEIVE:
 			} else if err := utils.Clidelcon(node.Mac.Adminurl, node.DocId); err != nil {
 				message <- "Info:" + err.Error()
 			} else if node_docid, createerr := utils.Clicreatecon(node.Mac.Adminurl, node.Port, utils.VerlisttoString(node_ver), node.Pro.Git, node.Mac.Env.Sign, node.Pro.Sharedpath, node.Pro.Dns); createerr != nil {
-				message <- "客户端创建镜像失败,error:" + createerr.Error()
+				message <- "error:" + createerr.Error() //客户端创建容器失败,
+				beego.Error("创建容器出错", createerr.Error())
 			} else if err := utils.Clistartcon(node.Mac.Adminurl, node_docid); err != nil {
 				nodeupdate <- node_docid + "-" + strconv.FormatUint(uint64(node.Id), 10)
 				node.DocId = node_docid
@@ -623,52 +646,18 @@ RECEIVE:
 					utils.Updatenode(node.Mac.Id, &node)
 					message <- "部署成功"
 					message <- "success"
-					contr = false
 				}
 			}
 			md5pathindex := strings.LastIndex(tmp_pro_path[0], utils.PD)
 			if err := utils.Deployover(tmp_pro_path[0][:md5pathindex]); err != nil {
 				message <- "删除临时项目代码出错：" + err.Error() + ",请联系管理员手动删除"
-				contr = true
 			}
-			if contr {
-				message <- "error"
-			}
-
+			deploycon <- true
 		}()
-		for {
-			contron := false
-			select {
-			case data_event := <-event:
-				data, err := json.Marshal(data_event)
-				if err != nil {
-					beego.Error("序列化EVENT TO json 出错:", err)
-				}
-				if ws.WriteMessage(websocket.TextMessage, data) != nil {
-				}
-			case mes := <-message:
-				event <- utils.Event{
-					Type:    utils.EVENT_MESSAGE,
-					Message: mes,
-				}
-
-				if strings.Contains(mes, "error") {
-					updatestats <- true
-					beego.Debug("处理结束err")
-					contron = true
-				}
-				if mes == "success" {
-					updatestats <- true
-					beego.Debug("处理结束")
-					contron = true
-				}
-			}
-			if contron {
-				beego.Info("处理完成")
-			}
-		}
+		<-deploycon
 		beego.Info("message 循环已退出00")
 	} //end for ws.ReadMessage()
+
 	beego.Info("websocket 函数体退出")
 }
 

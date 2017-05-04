@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"io/ioutil"
 	mpro "lvbu/models/project"
 	"os"
 	"os/exec"
@@ -11,6 +12,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/fsouza/go-dockerclient"
@@ -122,19 +124,6 @@ func Compilecode(compile, compilever, md5path string, message chan string) error
 			beego.Debug("PATH=", path)
 			beego.Debug("CLASSPATH=", classpath)
 		}
-	} else if compile == "PHP" && compilever != "" && compilever != "web" {
-		message <- "PHP--> 开始安装依赖(composer install)"
-		var composerpackagistcmd string
-		if ComposerPackagist == "" {
-			composerpackagistcmd = Composerbin + " config github-oauth.github.com \"54f16c9921a3ee75aef9d0b3c83a92c77bb867b4\""
-		} else {
-			composerpackagistcmd = Composerbin + " config repo.packagist " + Composerbin + " https://packagist.phpcomposer.com"
-		}
-		cmd = []string{composerpackagistcmd, Composerbin + " install", "ls -lh"}
-		path := os.Getenv("PATH")
-		path = compilever + PathPD + path
-		composerhome := md5path
-		env = []string{"PATH=" + path, "COMPOSER_HOME=" + composerhome}
 	} else {
 		message <- "不需要编译,退出编译状态"
 		return nil
@@ -163,26 +152,10 @@ func PullImage(image string, message chan string) (bool, error) {
 	beego.Debug("准备pull image:", image)
 	bash := exec.Command("/bin/bash", "-c", dockerbin+" pull "+image)
 	bash.Stderr = &buferr
-	//	stdout, err := bash.StdoutPipe()
-	//	if err != nil {
-	//		beego.Error("StdoutPipeERROR:", err)
-	//		return false, err
-	//	}
 	if starterr := bash.Run(); starterr != nil {
 		beego.Error("下载镜像出错:", starterr, buferr.String())
 		return false, errors.New(starterr.Error() + ";" + buferr.String())
 	}
-	//	reader := bufio.NewReader(stdout)
-	//	for {
-	//		line, err2 := reader.ReadString('\n')
-	//		if err2 != nil || io.EOF == err2 {
-	//			beego.Debug("err2:", line, err2)
-	//			message <- err2.Error()
-	//			break
-	//		}
-	//		message <- line
-	//	}
-	//	bash.Wait()
 	if bash.ProcessState.Success() {
 		beego.Debug("pull,完成")
 		message <- "下载镜像完成"
@@ -278,28 +251,6 @@ func BuildImage(node *mpro.Node, version []string, md5path []string, insfile str
 	beego.Debug(imagename)
 	bash := exec.Command(dockerbin, "build", "-t="+imagename, ".")
 	bash.Dir = buildpath
-	//	stdout, stdouterr := bash.StdoutPipe()
-	//	stderr, stderrerr := bash.StderrPipe()
-	//	if stdouterr != nil {
-	//		beego.Info("Error:", stdouterr)
-	//	}
-	//	if stderrerr != nil {
-	//		beego.Info("Error:", stderrerr)
-	//	}
-	//	if starterr := bash.Start(); starterr != nil {
-	//		beego.Error("下载镜像出错:", starterr)
-	//		return errors.New("下载镜像出错:" + starterr.Error())
-	//	}
-	//	reader := bufio.NewReader(stdout)
-	//	reader_err := bufio.NewReader(stderr)
-	//	for {
-	//		lineerr, err3 := reader_err.ReadString('\n')
-	//		line, err2 := reader.ReadString('\n')
-	//		if err2 != nil || err3 != nil || io.EOF == err2 || io.EOF == err3 {
-	//			break
-	//		}
-	//		message <- line + lineerr
-	//	}
 	bash.Stdout = os.Stdout
 	bash.Stderr = &buferr
 	if err := bash.Run(); err != nil {
@@ -400,7 +351,7 @@ func Gitpull(giturl string, message chan string) error {
 	for k, v_pro_path := range pro_path {
 		if is, _ := PathExists(v_pro_path); is {
 			message <- "项目存在,准备同步"
-			cmd := []string{"git reset --hard master", "git pull origin master", "git fetch --tags"}
+			cmd := []string{"git checkout .", "git reset --hard master", "git pull origin master", "git fetch --tags"}
 			for _, v := range cmd {
 				bash := exec.Command("/bin/bash", "-c", v)
 				bash.Dir = v_pro_path
@@ -465,12 +416,12 @@ func Gitchecver(giturl string, version []string, message chan string) bool {
 			}
 		}
 		if is, _ := PathExists(v_pro_path); is {
-			bash := exec.Command("/bin/bash", "-c", "git checkout master")
+			bash := exec.Command("/bin/bash", "-c", "git checkout .")
 			bash.Dir = v_pro_path
 			bash.Stderr = &buferr
 			if err := bash.Run(); err != nil {
 				beego.Error(pro_path, "切换版本出错:", err)
-				message <- "切换版本出错:" + err.Error() + buferr.String() + "命令：git checkout master"
+				message <- "切换版本出错:" + err.Error() + buferr.String() + "命令：git checkout ."
 				return false
 			}
 			bash = exec.Command("/bin/bash", "-c", "git checkout "+check_ver)
@@ -548,6 +499,48 @@ func GitTags(giturl string) (map[string][]string, error) {
 	return pro_gittag, nil
 }
 
+//拷贝临时文件前
+func ComposerInstallorUpdate(giturl, compile, compilever string, message chan string) error {
+	if compile == "PHP" && compilever != "" && compilever != "web" {
+		message <- "PHP--> 开始更新依赖(composer update)"
+		var composerpackagistcmd string
+		if ComposerPackagist == "" {
+			composerpackagistcmd = Composerbin + " config github-oauth.github.com \"46bdc7754fd512597584cb720f3313aecfa0f854\""
+		} else {
+			composerpackagistcmd = Composerbin + " config repo.packagist " + Composerbin + " https://packagist.phpcomposer.com"
+		}
+		cmd := []string{composerpackagistcmd, Composerbin + " install", "ls -lh"}
+		path := os.Getenv("PATH")
+		path = compilever + ":" + path
+		gitpath := Gittoname(giturl)
+		var buf bytes.Buffer
+		for _, path := range gitpath {
+
+			for _, v := range cmd {
+				env := []string{"PATH=" + path, "COMPOSER_HOME=" + EXECPATH + PathPD + "code" + PathPD + path}
+				bash := exec.Command("/bin/bash", "-c", v)
+				bash.Dir = EXECPATH + PathPD + "code" + PathPD + path
+				bash.Env = env
+				bash.Stdout = os.Stdout
+				bash.Stderr = &buf
+				if err := bash.Run(); err != nil {
+					message <- "composer 执行失败"
+					return errors.New(err.Error() + buf.String())
+				}
+				if !bash.ProcessState.Success() {
+					message <- "composer 执行失败"
+					return errors.New(bash.ProcessState.String() + buf.String())
+				}
+			}
+		}
+		message <- "composer 执行完成"
+		return nil
+	} else {
+		return nil
+	}
+
+}
+
 //客户端PULL IMAGE
 func Clipullimage(adminurl, giturl, tag string, message chan string) error {
 	//	certPath := "conf/cert.pem"
@@ -593,6 +586,7 @@ func Clipullimage(adminurl, giturl, tag string, message chan string) error {
 func Clilistcons(adminurl string) ([]docker.APIContainers, error) {
 	endpoint := "tcp://" + adminurl
 	client, err := docker.NewClient(endpoint)
+	client.SetTimeout(time.Second * 2)
 	client.SkipServerVersionCheck = true
 	if err != nil {
 		beego.Error("连接客户端", adminurl, ",", err)
@@ -618,19 +612,18 @@ func Clilistcons(adminurl string) ([]docker.APIContainers, error) {
 func Cliinspectcon(nodes []*mpro.Node) ([]*Event, error) {
 
 	var events []*Event
-	errindex := 0
 	for _, node := range nodes {
+		if node.DocId == "" {
+			beego.Debug("该节点未初始化,node:", node.Name)
+			continue
+		}
 		endpoint := "tcp://" + node.Mac.Adminurl
 		client, err := docker.NewClient(endpoint)
 		if err != nil {
 			beego.Error("连接客户端", node.Mac.Adminurl, ",", err)
 			return events, err
 		}
-		if node.DocId == "" {
-			beego.Debug("该节点未初始化,node:", node.Name)
-			errindex = errindex + 1 //如果这个错误索引的话，在调用遍历 c 时，会抛空指针异常的
-			continue
-		}
+
 		container, err := client.InspectContainer(node.DocId)
 		var event Event
 		if err != nil {
@@ -644,7 +637,6 @@ func Cliinspectcon(nodes []*mpro.Node) ([]*Event, error) {
 				beego.Info("容器不存在 ：", node.DocId)
 			} else {
 				beego.Error("获取容器列表出错跳过", node.Mac.Adminurl, ",", err)
-				errindex = errindex + 1 //如果这个错误索引的话，在调用遍历 c 时，会抛空指针异常的
 				continue
 			}
 		} else {
@@ -666,7 +658,7 @@ func Cliinspectcon(nodes []*mpro.Node) ([]*Event, error) {
 		events = append(events, &event)
 	}
 	if len(events) < 1 {
-		return events, errors.New("容器列表长度为零，请通知管理员,这并不是一个BUG")
+		return events, errors.New("节点列表长度为零")
 	}
 	return events, nil
 }
@@ -881,4 +873,16 @@ func PathExists(path string) (bool, error) {
 	}
 	beego.Debug("error:", err)
 	return false, err
+}
+
+func IsNullDir(path string) bool {
+	dir, err := ioutil.ReadDir(path)
+	if err != nil {
+		beego.Warning("读取composer 项目目录错误:", err)
+		return false
+	}
+	if len(dir) > 0 {
+		return true
+	}
+	return false
 }
