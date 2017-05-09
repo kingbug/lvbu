@@ -17,6 +17,7 @@ type Config struct {
 	Ovalue      string        `orm:"type(text)"`
 	Dtstatus    int           `orm:column(默认0无状态,1为已修改,2,3为已删除)`
 	Tostatus    int           `orm:column(默认0无状态,1为已修改,3为已删除)`
+	Filename    string        `orm:"size(200)"column(一个文件时前端显示'默认文件')`
 	Pro         *mpro.Project `orm:"rel(fk)"`
 	Content     string        `orm:"size(200)"`
 	Created     time.Time     `orm:"auto_now_add;type(datetime)"`
@@ -68,4 +69,12 @@ func (m *Config) Delete() error {
 
 func (m *Config) Query() orm.QuerySeter {
 	return orm.NewOrm().QueryTable(m)
+}
+
+func GetConfforName(pid uint, filename string) []*Config {
+	var confs []*Config
+	if _, err := new(Config).Query().Filter("Pro__Id", pid).Filter("Filename", filename).All(&confs); err != nil {
+		return nil
+	}
+	return confs
 }

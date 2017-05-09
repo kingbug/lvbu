@@ -23,21 +23,29 @@ func (c *ConController) List() {
 		c.Abort("503")
 	}
 	pro_id, _ := c.GetInt(":proid")
-	//	sign := c.GetString("sign")
-	//	env_id := men.Getenvid("sign")
 	pro := mpro.Project{Id: uint(pro_id)}
+	pro_filename := c.GetString("filename")
 	if proerr := pro.Read(); proerr != nil {
 		beego.Error("动作：查询项目信息，配置请求项目信息出错:", proerr)
 	}
 	var conf []*mcn.Config
-	if row, err := new(mcn.Config).Query().Filter("Pro__Id", pro_id).All(&conf); err != nil {
-		if row == 0 {
-			beego.Info("项目{Id:", pro_id, ", Name:", pro.Name, "},查询配置项为零")
-		} else {
-			beego.Error("动作：查询配置列表,数据库出错:", err)
+	if pro_filename == "" {
+		if row, err := new(mcn.Config).Query().Filter("Pro__Id", pro_id).Filter("Filename", "").All(&conf); err != nil {
+			if row == 0 {
+				beego.Info("项目{Id:", pro_id, ", Name:", pro.Name, "},查询配置项为零")
+			} else {
+				beego.Error("动作：查询配置列表,数据库出错:", err)
+			}
 		}
-
+	} else {
+		if mpro.IsExistName(uint(pro_id), pro_filename) {
+			// 取出固定文件名的配置项
+			conf = mcn.GetConfforName(uint(pro_id), pro_filename)
+		} else {
+			c.Data["message"] = map[string]interface{}{"message": "error", "content": "没有该配置文件名!", "type": 2}
+		}
 	}
+	c.Data["PRO_FILENAME"] = pro_filename
 	c.Data["pro"] = &pro
 	c.Data["conf"] = &conf
 	c.TplName = "config/config_list.tpl"
@@ -51,6 +59,7 @@ func (c *ConController) Add() {
 		c.Abort("503")
 	}
 	pro_id, proerr := c.GetInt("pro_id")
+	filename := c.GetString("filename")
 	key := c.GetString("key")
 	value := c.GetString("value")
 	description := c.GetString("description")
@@ -62,19 +71,25 @@ func (c *ConController) Add() {
 	//	env_id := men.Getenvid("sign")
 	pro := mpro.Project{Id: uint(pro_id)}
 	if key == "" {
-		c.Data["json"] = "key 不能为空"
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "key 不能为空", "type": 2}
 		c.ServeJSON()
 		return
 	}
-	if new(mcn.Config).Query().Filter("Pro__Id", pro_id).Filter("Name", key).Exist() {
+	if new(mcn.Config).Query().Filter("Pro__Id", pro_id).Filter("Name", key).Filter("Filename", filename).Exist() {
 		//如果同样的项目中已有该key := c.GetString("key"),返回警告
-		c.Data["json"] = map[string]string{"message": "error", "error": "已有相同的KEY" + key}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "已有相同的KEY" + key, "type": 2}
 		c.ServeJSON()
 		return
 	}
 	var conf mcn.Config
 	if sign != "de" {
-		c.Data["json"] = "非法操作"
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法操作", "type": 3, "confid": conf.Id}
+		c.ServeJSON()
+		return
+	}
+	//验证此文件名，是否已添加
+	if !mpro.IsExistName(uint(pro_id), filename) {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法操作,没有此配置文件", "type": 3}
 		c.ServeJSON()
 		return
 	}
@@ -84,15 +99,16 @@ func (c *ConController) Add() {
 		Pro:         &pro,
 		Dtstatus:    1,
 		Description: description,
+		Filename:    filename,
 	}
 	if conferr := conf.Insert(); conferr != nil {
 		beego.Error("动作：添加配置项,数据库出错:", conferr)
-		c.Data["json"] = map[string]string{"message": "error", "error": conferr.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": conferr.Error(), "type": 3}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = map[string]interface{}{"message": "success", "confid": conf.Id}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "添加成功", "confid": conf.Id, "type": 1}
 		c.ServeJSON()
 		return
 	}
@@ -137,19 +153,19 @@ func (c *ConController) Edit() {
 		conf.Ovalue = value
 		conf.Tostatus = 0
 	} else {
-		c.Data["json"] = "非法操作"
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "非法操作", "type": 3}
 		beego.Info("越级修改:", conf.Name, "失败")
 		c.ServeJSON()
 		return
 	}
 	if conferr := conf.Update(); conferr != nil {
 		beego.Error("动作：修改配置项,数据库出错:", conferr)
-		c.Data["json"] = conferr.Error()
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": conferr.Error(), "type": 3}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = "success"
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "修改成功", "type": 1}
 		c.ServeJSON()
 		return
 	}
@@ -188,12 +204,12 @@ func (c *ConController) Del() {
 	}
 	if conferr := conf.Update(); conferr != nil {
 		beego.Error("动作：开发删除配置项,数据库出错:", conferr)
-		c.Data["json"] = map[string]interface{}{"message": "error", "error": conferr.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": conferr.Error(), "type": 2}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = map[string]interface{}{"message": "success"}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "删除成功", "type": 1}
 		c.ServeJSON()
 		return
 	}
@@ -247,18 +263,18 @@ func (c *ConController) Sync() {
 		}
 
 	} else {
-		c.Data["json"] = map[string]interface{}{"message": "不能越级同步"}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "不能越级同步", "type": 2}
 		c.ServeJSON()
 		return
 	}
 	if conferr := conf.Update(); conferr != nil {
 		beego.Error("动作："+per+"同步配置项,数据库出错:", conferr)
-		c.Data["json"] = map[string]interface{}{"message": conferr.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": conferr.Error(), "type": 2}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = map[string]interface{}{"message": "success", "data": data}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "同步成功", "type": 1, "data": data}
 		c.ServeJSON()
 		return
 	}
@@ -295,12 +311,12 @@ func (c *ConController) Ignore() {
 	}
 	if conferr := conf.Update(); conferr != nil {
 		beego.Error("动作：开发删除配置项,数据库出错:", conferr)
-		c.Data["json"] = map[string]interface{}{"message": "error", "error": conferr.Error()}
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": conferr.Error(), "type": 2}
 		c.ServeJSON()
 		return
 	} else {
 		//操作记录
-		c.Data["json"] = map[string]interface{}{"message": "success"}
+		c.Data["json"] = map[string]interface{}{"message": "success", "content": "已忽略", "type": 1}
 		c.ServeJSON()
 		return
 	}
@@ -309,12 +325,13 @@ func (c *ConController) Ignore() {
 func (c *ConController) Download() {
 	pro := c.GetString("pro") //PRONAME
 	filetype := c.GetString("filetype")
-	env := c.GetString("env")         //
-	version := c.GetString("version") //PROVERSION
-	line := c.GetString("line")       //空
+	env := c.GetString("env")               //
+	version := c.GetString("version")       //PROVERSION
+	conffilename := c.GetString("filename") //可为空，空时为默认文件
+	line := c.GetString("line")             //空
 	if pro != "" && filetype != "" && env != "" && version != "" {
-		filename := "prohisconf/" + pro + "_" + env + "_" + version + "_" + filetype + ".conf"
-		file, err := utils.GetConf(pro, env, version, filetype, line)
+		filename := "prohisconf/" + pro + "_" + env + "_" + version + "_" + filetype + "_" + conffilename + ".conf"
+		file, err := utils.GetConf(pro, env, version, filetype, conffilename, line)
 		if err != nil {
 			c.Data["data"] = err.Error()
 		}

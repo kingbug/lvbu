@@ -24,6 +24,11 @@
     <![endif]-->
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<button type="button" class="btn btn-warning" title="Popover title"  
+			data-container="body" data-toggle="popover" data-placement="right" 
+			data-content="<a href='//www.baidu.com'><i class='fa fa-file-text'></i>右侧的 Popover 中的一些内容</a>">
+		右侧的 Popover
+	</button>
 <span id="isadd" style="display:none">{{ .isadd }}</span>
 <span id="isaddgid" style="display:none">{{.mirgid}}</span>
 <div class="wrapper">
@@ -524,6 +529,7 @@
 	$(".alert").click(function(){
 		$(".navbar-fixed-top").hide(1000);
 	});
+	$("[data-toggle='popover']").popover({html:true});
 </script>
 </body>
 </html>

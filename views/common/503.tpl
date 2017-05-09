@@ -5,7 +5,7 @@
 <title>503</title>
 </head>
 <body>
-<h1>没有访问该资源的权限，<span id="sec">5</span>秒后跳转到<a id="redirect" onclick="history.go(-1)" style="color:blue;cursor:pointer">上个页面</a></h1>
+<h1>没有访问该资源的权限，<span id="sec">5</span>秒后跳转到<a id="redirect" onclick="destination();" style="color:blue;cursor:pointer">上个页面</a></h1>
 </body>
 <script>
 
@@ -23,7 +23,27 @@ $(document).ready(function(){
 		}
 		
 	}
+	
+	
 })
+
+function destination() {
+		
+		var dest=GetQueryString("destination");
+		if(dest !=null && dest.toString().length>1)
+		{
+		   location.href=dest;
+		} else {
+			history.go(-1);
+		}
+	}
+function GetQueryString(name)
+{
+     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+     var r = window.location.search.substr(1).match(reg);
+     if(r!=null)return  unescape(r[2]); return null;
+}
+ 
 
 </script>
 </html>

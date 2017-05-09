@@ -134,10 +134,33 @@
 														<i class="id" style="display:none">{{.Id}}</i>
 														</span>
 														{{end}}
-														{{if(Isperitem "cons" $.uid)}}
-                                                        <a class="btn" href="/{{.Id}}/conlist/"  target="_blank">
-                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
-                                                        </a>
+														<!-- 权限配置查看验证 -->
+														{{if (Isperitem "cons" $.uid)}}
+                                                        
+                                                            
+															<button id="popover{{.Id}}" type="button" class="btn btn-link" style="padding-left:1px;" title="列表"  
+																	data-container="body" data-toggle="popover" data-placement="right" 
+																	data-content="
+																	<a class='btn conffileadd' onclick='conffileadd({{.Id}})' style='color:#0033FF;'>添加文件</a>
+																	{{$pid := .Id}}
+																	
+																		{{ range $index, $filename := .Conflist}}
+																			<a class=' btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			{{ if $filename}}
+																				{{$filename}}
+																			{{else}}
+																				默认文件
+																			{{end}}
+																			</a>
+																		{{else}}
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																		{{end}}
+																			
+																	">
+																	<i class="fa fa-wrench btn-link"  title="点击管理项目配置文件">配置文件</i>
+															</button>
+															
+                                                        
 														{{end}}
 														<i class="id" style="display:none">{{.Id}}</i>
                                                     </td>
@@ -199,9 +222,27 @@
 														</span>
 														{{end}}
 														{{if(Isperitem "cons" $.uid)}}
-                                                        <a class="btn" href="/{{.Id}}/conlist/"  target="_blank">
-                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
-                                                        </a>
+	                                                        <button id="popover{{.Id}}" type="button" class="btn btn-link" style="padding-left:1px;" title="列表"  
+																	data-container="body" data-toggle="popover" data-placement="right" 
+																	data-content="
+																	<a class='btn conffileadd' onclick='conffileadd({{.Id}})' style='color:#0033FF;'>添加文件</a>
+																	{{$pid := .Id}}
+																	
+																		{{ range $index, $filename := .Conflist}}
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			{{ if $filename}}
+																				{{$filename}}
+																			{{else}}
+																				默认文件
+																			{{end}}
+																			</a>
+																		{{else}}
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																		{{end}}
+																			
+																	">
+																	<i class="fa fa-wrench btn-link"  title="点击管理项目配置文件">配置文件</i>
+															</button>
 														{{end}}
 														
 														<i class="id" style="display:none">{{.Id}}</i>
@@ -276,9 +317,27 @@
 														</span>
 														{{end}}
 														{{if(Isperitem "cons" $.uid)}}
-                                                        <a class="btn" href="/{{.Id}}/conlist/"  target="_blank">
-                                                            <i class="fa fa-wrench" title="点击管理项目配置文件">配置文件</i>
-                                                        </a>
+	                                                        <button id="popover{{.Id}}" type="button" class="btn btn-link" style="padding-left:1px;" title="列表"  
+																	data-container="body" data-toggle="popover" data-placement="right" 
+																	data-content="
+																	<a class='btn conffileadd' onclick='conffileadd({{.Id}})' style='color:#0033FF;'>添加文件</a>
+																	{{$pid := .Id}}
+																	
+																		{{ range $index, $filename := .Conflist}}
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			{{ if $filename}}
+																				{{$filename}}
+																			{{else}}
+																				默认文件
+																			{{end}}
+																			</a>
+																		{{else}}
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																		{{end}}
+																			
+																	">
+																	<i class="fa fa-wrench btn-link"  title="点击管理项目配置文件">配置文件</i>
+															</button>
 														{{end}}
 														
 														<i class="id" style="display:none">{{.Id}}</i>
@@ -340,7 +399,6 @@
         <!-- /.modal -->
       </div>
 	<!-- 确认框 end -->
-	
 	
     {{template "common/footitle.tpl" .}}    
 </div>
@@ -486,6 +544,49 @@
 		$(".navbar-fixed-top").hide(1000);
 	});
 	
+	
+	var popoverhtmlstring;
+	function conffileadd(pid) {
+		$(".verify-modal").find(".modal-title").html("添加文件名");
+		$(".verify-modal").find(".modal-body").html("<input type='text' name='filename' class='form-control'  placeholder='[0-9A-Za-z./]'/>");
+		popoverhtmlstring = $("#popover"+pid).attr("data-content");
+		//给确认按钮动态绑定事件
+		abcc = function (){
+			var filename;
+			filename = $(".verify-modal").find(".modal-body").find("input").val();
+			if (filename == ""){
+				alertmessage(2, "文件名不能为空");
+				return;
+			}
+			$.ajax({
+				url:"/conffileadd",
+				type: "post",
+				data:{pid: pid, filename: filename},
+				dataType: "json",
+				success: function(msg) {
+					$("#ver_break").click();
+					if (msg.message == "success"){
+						alertmessage(msg.type,msg.content);
+						popoverhtmlstring = popoverhtmlstring + "<a class='btn list-group-item' href='/"+pid+"/conlist/?filename=" + filename + "'  target='_blank'>" + filename + "</a>";
+		
+						$("#popover"+pid).attr("data-content", popoverhtmlstring);
+						return;
+					} else {
+						alertmessage(msg.type,msg.content);
+					}
+					
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alertmessage(3,XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503";
+					}
+				}
+			});// end ajax
+		}
+		$(".modal").show(1000);
+	}
+	$("[data-toggle='popover']").popover({html:true, trigger:"focus" });
 </script>
 
 

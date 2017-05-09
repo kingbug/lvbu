@@ -122,6 +122,40 @@ func (c *ProController) Add() {
 	}
 
 }
+
+func (c *ProController) FileAdd() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+
+	if !mper.Isperitem("proe", uid) { //项目编辑(proe)
+		beego.Debug("动作:请求编辑项目,权限验证失败")
+		c.Abort("503")
+	}
+	if c.Ctx.Request.Method == "POST" {
+		id, _ := c.GetInt16("pid")
+		filename := c.GetString("filename")
+		if filename == "" {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "添加失败：文件名不能为空!", "type": 2}
+			c.ServeJSON()
+			return
+		}
+		if err := mpro.AddConf(uint(id), filename); err != nil {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "添加失败:" + err.Error(), "type": 3}
+			c.ServeJSON()
+			return
+		} else {
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "添加成功!", "type": 1}
+			c.ServeJSON()
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法提交!", "type": 2}
+		c.ServeJSON()
+		return
+	}
+
+}
+
 func (c *ProController) Edit() {
 	uid := c.GetSession("uid").(uint)
 	c.Data["uid"] = uid
@@ -242,6 +276,46 @@ func (c *ProController) Edit() {
 
 }
 
+func (c *ProController) FileEdit() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+
+	if !mper.Isperitem("proe", uid) { //项目编辑(proe)
+		beego.Debug("动作:请求编辑项目,权限验证失败")
+		c.Abort("503")
+	}
+	if c.Ctx.Request.Method == "POST" {
+		id, _ := c.GetInt16("pid")
+		oldfile := c.GetString("oldfile")
+		filename := c.GetString("newfilename")
+		if oldfile == "" {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "修改失败：默认文件不能修改文件名!", "type": 2}
+			c.ServeJSON()
+			return
+		}
+		if filename == "" {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "修改失败：参数不足!", "type": 2}
+			c.ServeJSON()
+			return
+		}
+
+		if err := mpro.EditConf(uint(id), oldfile, filename); err != nil {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "修改失败:" + err.Error(), "type": 3}
+			c.ServeJSON()
+			return
+		} else {
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "修改成功!", "type": 1, "filename": filename}
+			c.ServeJSON()
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法提交!", "type": 2}
+		c.ServeJSON()
+		return
+	}
+
+}
+
 func (c *ProController) List() {
 	uid := c.GetSession("uid").(uint)
 	c.Data["uid"] = uid
@@ -276,6 +350,53 @@ func (c *ProController) Del() {
 		c.ServeJSON()
 		return
 	}
+}
+
+func (c *ProController) FileDel() {
+	uid := c.GetSession("uid").(uint)
+	c.Data["uid"] = uid
+
+	if !mper.Isperitem("proe", uid) { //项目编辑(proe)
+		beego.Debug("动作:请求删除配置文件,权限验证失败")
+		c.Abort("503")
+	}
+	if c.Ctx.Request.Method == "POST" {
+		id, _ := c.GetInt16("pid")
+		filename := c.GetString("filename")
+		undo, _ := c.GetBool("undo")
+		if filename == "" {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "删除失败：参数不足!", "type": 2}
+			c.ServeJSON()
+			return
+		}
+		if filename == "default" {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "删除失败：默认文件不能删除!", "type": 2}
+			c.ServeJSON()
+			return
+		}
+		if undo == true {
+			//一个假消息
+			beego.Info("删除配置文件，假消息已发送")
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "删除成功!", "type": 1}
+			c.ServeJSON()
+			return
+		}
+		if err := mpro.DelConf(uint(id), filename); err != nil {
+			c.Data["json"] = map[string]interface{}{"message": "error", "content": "删除失败:" + err.Error(), "type": 3}
+			c.ServeJSON()
+			return
+		} else {
+			beego.Info("删除配置文件，消息已接受")
+			c.Data["json"] = map[string]interface{}{"message": "success", "content": "删除成功!", "type": 1}
+			c.ServeJSON()
+			return
+		}
+	} else {
+		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法提交!", "type": 2}
+		c.ServeJSON()
+		return
+	}
+
 }
 
 //版本列表

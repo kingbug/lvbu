@@ -48,14 +48,20 @@ func Serialixml(this *Serconf, breaks string) (*bytes.Buffer, error) {
 	return confxml, nil
 }
 
-func GetConf(sign, env, ver, filetype, breaks string) (*bytes.Buffer, error) {
+func GetConf(sign, env, ver, filetype, conffilename, breaks string) (*bytes.Buffer, error) {
 	var conffortype *bytes.Buffer
 	confidir := "prohisconf"
 	pro_name := sign
 	if mkerr := os.MkdirAll(confidir+"/"+pro_name, 0666); mkerr != nil {
 		beego.Debug("动作:请求配置文件,创建目录出错:", mkerr)
 	}
-	filename := confidir + "/" + pro_name + "/" + env + "_" + ver + ".conf"
+	var filename string
+	if conffilename == "" {
+		filename = confidir + "/" + pro_name + "/" + env + "_" + ver + ".conf"
+	} else {
+		filename = confidir + "/" + pro_name + "/" + env + "_" + ver + "_" + filename + ".conf"
+	}
+
 	var conffile *os.File
 	defer conffile.Close()
 	var jsonfile = make(map[string]string)
@@ -65,16 +71,16 @@ func GetConf(sign, env, ver, filetype, breaks string) (*bytes.Buffer, error) {
 		var oldverconf []orm.ParamsList
 		env = strings.ToUpper(env)
 		if env == "DE" {
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).ValuesList(&oldverconf, "Name", "Dvalue"); err != nil {
-				return conffortype, errors.New("生成老版本配置时，数据查询失败:" + err.Error())
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Dvalue"); err != nil {
+				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		} else if env == "QE" {
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).ValuesList(&oldverconf, "Name", "Tvalue"); err != nil {
-				return conffortype, errors.New("生成老版本配置时，数据查询失败:" + err.Error())
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Tvalue"); err != nil {
+				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		} else { //"OE"
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).ValuesList(&oldverconf, "Name", "Ovalue"); err != nil {
-				return conffortype, errors.New("生成老版本配置时，数据查询失败:" + err.Error())
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Ovalue"); err != nil {
+				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		}
 		for _, v := range oldverconf {

@@ -43,6 +43,20 @@
 	</style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+<nav class="navbar navbar-fixed-top" style="z-index: 1031; display:none;">
+
+  <div class="container">
+
+   <div class="alert alert-warning">
+	<a href="#" class="close" data-dismiss="alert">
+		×
+	</a>
+	<strong>警告！</strong>&nbsp;&nbsp;&nbsp;&nbsp;<span>您的网络连接有问题。<span>
+</div>
+
+  </div>
+
+</nav>
 <span style="display:none" id="pro_id">{{.pro.Id}}</span>
 
 <div class="wrapper">
@@ -310,7 +324,19 @@
                                 <div class="post">
                                     <div class="box">
                                         <div class="box-header">
-                                            <h3 class="box-title">汇总</h3>
+											<h3 class="box-title">汇总</h3><br/>
+                                            
+											{{if $.PRO_FILENAME}}
+											<h3 class="box-title filename" style="color:	#4822DD">{{$.PRO_FILENAME}}</h3>
+												{{if(Isperitem "proe" $.uid)}}
+													<a class="btn conffileedit">编辑文件名</a>
+													<a class="btn conffiledel">删除</a>
+												{{end}}
+											{{else}}
+												<h3 class="box-title filename" style="color:	#4822DD">默认文件</h3>
+											{{end}}
+											
+											
                                         </div>
                                         <!-- /.box-header -->
                                         <div class="box-body">
@@ -507,6 +533,11 @@
 		"iDisplayLength" : 40,
 	});
 	
+	var errmessage = {{$.message}}
+	if (errmessage.message == "error") {
+		alertmessage(errmessage.type,errmessage.content);
+	}
+	var PRO_FILENAME= {{$.PRO_FILENAME}};
 	
 	$(".rm_pro").click(function(){
 		var pro_id = $(this).find("i.id").text();
@@ -681,7 +712,6 @@
 		if ($(this).hasClass('disabled')){
 			return;  //
 		}
-
 		var pro_id  = $("body span#pro_id").text();
 		var conf_id = $(this).siblings("i.id").text();
 		var td = $(this).parent();
@@ -709,7 +739,7 @@
 			$.ajax({
 				url:"/confadd",
 				type: "post",
-				data:{pro_id: pro_id, key: key, value: value, sign: env_sign, description: description},
+				data:{pro_id: pro_id, key: key, value: value, sign: env_sign, filename: PRO_FILENAME, description: description},
 				dataType: "json",
 				success: function(msg) {
 					if (msg.message == "success"){
@@ -723,14 +753,15 @@
 							previous_td.addClass("value");//开发环境 td添加value  class
 							td.find("i.pro_id").addClass("id").removeClass("pro_id").text(msg.confid);
 						}
+						alertmessage(msg.type, msg.content);
 						return;
 					} else {
-						alert(msg.error);
+						alertmessage(msg.type, msg.content);
 					}
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
-					alert(XMLHttpRequest.status);
+					alertmessage(3, XMLHttpRequest.status);
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
 					}
@@ -756,9 +787,10 @@
 						me.siblings("span.ignore").remove();
 						switch_save(tr);
 						tdinputcontr = false;
+						alertmessage(msg.type, msg.content);
 						return;
 					} else {
-						alert(msg);
+						alertmessage(msg.type, msg.content);
 					}
 					
 				},
@@ -852,9 +884,10 @@
 						var tr_index = table1.row(tr).index();
 						table1.row(tr_index).remove().draw( false );
 						$("#ver_break").click();
+						alertmessage(msg.type, msg.content);
 						return;
 					} else {
-						alert(msg.error);
+						alertmessage(msg.type, msg.content);
 					}
 					
 				},
@@ -879,7 +912,7 @@
 		}
 		var inputval = tr.find("input[name='value']").val()
 		if ( inputval == "") {
-			alert("请先退出编辑模式");
+			alertmessage(2, "请先退出编辑模式");
 			return;
 		}
 		var env_sign;
@@ -906,14 +939,14 @@
 						}else {
 							tr.find("td:eq(1)").text(msg.data);
 						}
-						
+						alertmessage(msg.type, msg.content);
 					} else {
-						alert(msg.message);
+						alertmessage(msg.type, msg.content);
 					}
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
-					alert(XMLHttpRequest.status);
+					alertmessage(2, XMLHttpRequest.status);
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
 					}
@@ -931,7 +964,7 @@
 		}
 		var inputval = tr.find("input[name='value']").val()
 		if ( inputval == "") {
-			alert("请先退出编辑模式");
+			alertmessage(2, "请先退出编辑模式");
 			return;
 		}
 		var env_sign;
@@ -959,19 +992,192 @@
 						}else {
 							tr.find("td:eq(1)").text(msg.data);
 						}
-						
+						alertmessage(msg.type, msg.content);
 					} else {
-						alert(msg.message);
+						alertmessage(msg.type, msg.content);
 					}
 					
 				},
 				error:function(XMLHttpRequest, textStatus, errorThrown) {
-					alert(XMLHttpRequest.status);
+					alertmessage(2, XMLHttpRequest.status);
 					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
 						location.href="/503"
 					}
 				}
 		});
+	});
+	
+	//文件名修改
+	$(".conffileedit").click(function(){
+		$(".verify-modal").find(".modal-title").html("新文件名");
+		$(".verify-modal").find(".modal-body").html("<input type='text' name='filename' class='form-control' placeholder='[0-9A-Za-z./]'/>");
+		$(".modal").show(1000);	
+		//给确认按钮动态绑定事件
+		abcc = function(){
+			var pro_id  = $("body span#pro_id").text();
+			var oldfile;
+			if (PRO_FILENAME == "") {
+				oldfile = "default";
+			} else {
+				oldfile = PRO_FILENAME;
+			}
+			var filename;
+			filename = $(".verify-modal").find(".modal-body").find("input").val();
+			if (filename == ""){
+				alertmessage(2, "文件名不能为空");
+				return;
+			}
+			$.ajax({
+				url:"/conffileedit",
+				type: "post",
+				data:{"pid": pro_id, "oldfile": oldfile, "newfilename": filename,},
+				dataType: "json",
+				success: function(msg) {
+					$("#ver_break").click();
+					if (msg.message == "success"){
+						$("h3.filename").text(msg.filename);
+						PRO_FILENAME = msg.filename;
+						alertmessage(msg.type,msg.content);
+						return;
+					} else {
+						alertmessage(msg.type,msg.content);
+					}
+					
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alertmessage(3,XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503"
+					}
+				}
+			});
+		};
+	});
+	
+	//文件名删除
+	$(".conffiledel").click(function(){
+		$(".verify-modal").find(".modal-title").html("警告");
+		$(".verify-modal").find(".modal-body").html("确认删除配置文件 : <b>" + PRO_FILENAME + "</b>");
+		$(".modal").show(1000);	
+		//给确认按钮动态绑定事件
+		abcc = function (){
+			var pro_id  = $("body span#pro_id").text();
+			var filename;
+			if (PRO_FILENAME == "") {
+				filename = "default"
+			} else {
+				filename = PRO_FILENAME;
+			}
+			$.ajax({
+				url:"/conffiledel",
+				type: "post",
+				data:{id: pro_id, filename: filename, undo: true},
+				dataType: "json",
+				success: function(msg) {
+					$("#ver_break").click();
+					if (msg.message == "success"){
+						
+						alertmessage(msg.type,msg.content + "将在<span class='readsecond'>10</span>秒后离开自动此页,如需撤回删除动作请点击<a class='btn' onclick='undo();'>这里</a>", 11);
+						//读秒完成跳转默认文件配置
+						goreadsecond(10); 
+						return;
+					} else {
+						alertmessage(msg.type,msg.content);
+					}
+					
+				},
+				error:function(XMLHttpRequest, textStatus, errorThrown) {
+					alertmessage(3,XMLHttpRequest.status);
+					if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+						location.href="/503"
+					}
+				}
+			});
+		}
+	});
+	
+	var t2;
+	function goreadsecond(second) {
+		var sec = $("span.readsecond").text();
+		t2 = setInterval(load,1000);
+		function load(){
+			
+			if (sec < 0 ) {
+				var pro_id  = $("body span#pro_id").text();
+				var filename;
+				if (PRO_FILENAME == "") {
+					filename = "default"
+				} else {
+					filename = PRO_FILENAME;
+				}
+				$.ajax({
+					url:"/conffiledel",
+					type: "post",
+					data:{pid: pro_id, filename: filename, undo: false},
+					dataType: "json",
+					success: function(msg) {
+						$("#ver_break").click();
+						if (msg.message == "success"){
+							alertmessage(msg.type, msg.content);
+							setInterval("location.href='/503?destination=/index';",5000);
+							return;
+						} else {
+							alertmessage(msg.type,msg.content);
+						}
+						
+					},
+					error:function(XMLHttpRequest, textStatus, errorThrown) {
+						alertmessage(3,XMLHttpRequest.status);
+						if (XMLHttpRequest.status == "503" || XMLHttpRequest.status == "500" ) {
+							location.href="/503"
+						}
+					}
+				});
+				clearInterval(t2);
+			}else {
+				$("span.readsecond").text(sec);
+				sec = sec - 1;
+			}
+			
+		}
+	}
+	
+	//删除配置文件时，点这里撤消， 消除定时器
+	function undo() {
+		clearInterval(t2);
+	}
+	
+	var t1;
+	function alertmessage(type,content, second) {
+		if (!second) {second= 5000;} else {second = second*1000;}
+		$(".navbar-fixed-top").show(1000);
+		alertd = $("nav.navbar").children(".container").children(".alert");
+		switch(type)
+		{
+			case 1://完成
+				alertd.removeClass("alert-warning").removeClass("alert-error").addClass("alert-success");
+				alertd.find("strong").text("成功!");
+				break;
+			case 2://警告
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("警告!");
+				break;
+			case 3://错误
+				alertd.removeClass("alert-success").removeClass("alert-warning").addClass("alert-error");
+				alertd.removeClass("alert-success").removeClass("alert-error").addClass("alert-warning");
+				alertd.find("strong").text("错误!");
+				break;
+			default:
+				break;
+		}
+		
+		alertd.find("span").html(content);
+		window.clearTimeout(t1);
+		t1 = window.setTimeout("$('.alert').click();",second);
+	}
+	
+	$(".alert").click(function(){
+		$(".navbar-fixed-top").hide(1000);
 	});
 </script>
 </body>
