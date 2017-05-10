@@ -291,6 +291,7 @@ func (c *NodeController) Wsadd() {
 		"gitpass:", pro.Gitpass)
 
 	utils.Conleave(m)
+	//初始化动作: 拉取代码和拉取镜像
 	go func() {
 		if contr, err := utils.PullImage(mirr.Hubaddress, message); !contr {
 			message <- "error"
@@ -408,6 +409,7 @@ func (c *NodeController) Wsdeploy() {
 								if err := node.Mac.Read(); err != nil {
 									beego.Error("查询节点所属主机出错", err)
 								}
+								utils.Updatenode(node.Mac.Id, node)
 								tmp_nodes = append(tmp_nodes, node)
 							}
 						}
@@ -439,6 +441,7 @@ func (c *NodeController) Wsdeploy() {
 
 	}()
 
+	//websocket 发送信息
 	go func() {
 		for {
 			contron := false
@@ -473,6 +476,7 @@ func (c *NodeController) Wsdeploy() {
 		}
 	}()
 
+	//接收信息
 RECEIVE:
 	//tmp_ms: example 90:v8.8.8
 	for {

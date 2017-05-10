@@ -351,7 +351,7 @@ func Gitpull(giturl string, message chan string) error {
 	for k, v_pro_path := range pro_path {
 		if is, _ := PathExists(v_pro_path); is {
 			message <- "项目存在,准备同步"
-			cmd := []string{"git checkout .", "git reset --hard master", "git pull origin master", "git fetch --tags"}
+			cmd := []string{"git reset --hard master", "git pull origin master", "git fetch --tags"}
 			for _, v := range cmd {
 				bash := exec.Command("/bin/bash", "-c", v)
 				bash.Dir = v_pro_path
@@ -416,15 +416,15 @@ func Gitchecver(giturl string, version []string, message chan string) bool {
 			}
 		}
 		if is, _ := PathExists(v_pro_path); is {
-			bash := exec.Command("/bin/bash", "-c", "git checkout .")
-			bash.Dir = v_pro_path
-			bash.Stderr = &buferr
-			if err := bash.Run(); err != nil {
-				beego.Error(pro_path, "切换版本出错:", err)
-				message <- "切换版本出错:" + err.Error() + buferr.String() + "命令：git checkout ."
-				return false
-			}
-			bash = exec.Command("/bin/bash", "-c", "git checkout "+check_ver)
+			//			bash := exec.Command("/bin/bash", "-c", "git checkout .")
+			//			bash.Dir = v_pro_path
+			//			bash.Stderr = &buferr
+			//			if err := bash.Run(); err != nil {
+			//				beego.Error(pro_path, "切换版本出错:", err)
+			//				message <- "切换版本出错:" + err.Error() + buferr.String() + "命令：git checkout ."
+			//				return false
+			//			}
+			bash := exec.Command("/bin/bash", "-c", "git checkout "+check_ver)
 			bash.Dir = v_pro_path
 			bash.Stderr = &buferr
 			if err := bash.Run(); err != nil {
@@ -502,29 +502,30 @@ func GitTags(giturl string) (map[string][]string, error) {
 //拷贝临时文件前
 func ComposerInstallorUpdate(giturl, compile, compilever string, message chan string) error {
 	if compile == "PHP" && compilever != "" && compilever != "web" {
-		message <- "PHP--> 开始更新依赖(composer update)"
+		message <- "PHP--> 开始安装依赖(composer install)"
 		var composerpackagistcmd string
 		if ComposerPackagist == "" {
 			composerpackagistcmd = Composerbin + " config github-oauth.github.com \"46bdc7754fd512597584cb720f3313aecfa0f854\""
 		} else {
 			composerpackagistcmd = Composerbin + " config repo.packagist " + Composerbin + " https://packagist.phpcomposer.com"
 		}
-		cmd := []string{composerpackagistcmd, Composerbin + " install", "ls -lh"}
+		cmd := []string{composerpackagistcmd, Composerbin + " install", "ls -lh", "git checkout ."}
 		path := os.Getenv("PATH")
 		path = compilever + ":" + path
 		gitpath := Gittoname(giturl)
 		var buf bytes.Buffer
-		for _, path := range gitpath {
+		for _, dir := range gitpath {
 
 			for _, v := range cmd {
-				env := []string{"PATH=" + path, "COMPOSER_HOME=" + EXECPATH + PathPD + "code" + PathPD + path}
+				env := []string{"PATH=" + path, "COMPOSER_HOME=" + EXECPATH + PD + "code" + PD + dir}
 				bash := exec.Command("/bin/bash", "-c", v)
-				bash.Dir = EXECPATH + PathPD + "code" + PathPD + path
+				bash.Dir = EXECPATH + PD + "code" + PD + dir
 				bash.Env = env
 				bash.Stdout = os.Stdout
 				bash.Stderr = &buf
 				if err := bash.Run(); err != nil {
 					message <- "composer 执行失败"
+					beego.Info("bash.Env=", bash.Env)
 					return errors.New(err.Error() + buf.String())
 				}
 				if !bash.ProcessState.Success() {
