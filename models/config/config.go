@@ -23,6 +23,9 @@ type Config struct {
 	Created     time.Time     `orm:"auto_now_add;type(datetime)"`
 }
 
+var Checknum = make(map[string]int)
+var Modifynum = make(map[string]int)
+
 func (m *Config) TableName() string {
 	return beego.AppConfig.String("dbprefix") + "config"
 }
@@ -77,4 +80,15 @@ func GetConfforName(pid uint, filename string) []*Config {
 		return nil
 	}
 	return confs
+}
+
+func AutoChecknum(sign, env, filename string) {
+	if num, ok := Modifynum[sign+"_"+env+"_"+filename]; ok {
+		Modifynum[sign+"_"+env+"_"+filename] = num + 1
+	} else {
+		Modifynum[sign+"_"+env+"_"+filename] = 1
+	}
+	tmpkey := sign + "_" + env + "_" + filename
+	tmpnum := Modifynum[sign+"_"+env+"_"+filename]
+	beego.Debug("Modifynum["+tmpkey+"]有改动", tmpnum)
 }

@@ -48,7 +48,29 @@ func Serialixml(this *Serconf, breaks string) (*bytes.Buffer, error) {
 	return confxml, nil
 }
 
-func GetConf(sign, env, ver, filetype, conffilename, breaks string) (*bytes.Buffer, error) {
+func GetConf(sign, env, ver, filetype, conffilename string, round int, breaks string) (*bytes.Buffer, error) {
+	if round != 0 {
+		if num, ok := mcn.Checknum[sign+"_"+env+"_"+conffilename]; ok { //如果OK有值
+			num = num + mcn.Modifynum[sign+"_"+env+"_"+conffilename]
+			mnum := mcn.Modifynum[sign+"_"+env+"_"+conffilename]
+			beego.Debug("num:", num)
+			mkey := sign + "_" + env + "_" + conffilename
+			beego.Debug("mcn.Modifynum["+mkey+"]", mnum)
+			if round == num { //配置没改动
+				beego.Debug("没改动")
+				return nil, nil
+			} else { //配置有改动
+				beego.Debug("有改动")
+			}
+			mcn.Checknum[sign+"_"+env+"_"+conffilename] = num
+		} else { //第一次
+			beego.Debug("第一次")
+			mcn.Checknum[sign+"_"+env+"_"+conffilename] = round + 1
+			beego.Debug("项目:(标识)"+sign, "第一次获取环境", env, "配置")
+		}
+
+		mcn.Modifynum[sign+"_"+env+"_"+conffilename] = 0
+	}
 	var conffortype *bytes.Buffer
 	confidir := "prohisconf"
 	pro_name := sign
@@ -86,6 +108,7 @@ func GetConf(sign, env, ver, filetype, conffilename, breaks string) (*bytes.Buff
 		for _, v := range oldverconf {
 			jsonfile[fmt.Sprintf("%s", v[0])] = fmt.Sprintf("%s", v[1])
 		}
+		jsonfile["checknum"] = fmt.Sprintf("%d", mcn.Checknum[sign+"_"+env+"_"+conffilename])
 
 	} else {
 		data, rerr := ioutil.ReadAll(conffile)

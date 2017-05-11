@@ -87,7 +87,7 @@ func (c *ConController) Add() {
 		c.ServeJSON()
 		return
 	}
-	//验证此文件名，是否已添加
+	//验证该项目是否有此文件名
 	if !mpro.IsExistName(uint(pro_id), filename) {
 		c.Data["json"] = map[string]interface{}{"message": "error", "content": "非法操作,没有此配置文件", "type": 3}
 		c.ServeJSON()
@@ -107,6 +107,8 @@ func (c *ConController) Add() {
 		c.ServeJSON()
 		return
 	} else {
+		pro.Read()
+		mcn.AutoChecknum(pro.Sign, strings.ToUpper(sign), filename)
 		//操作记录
 		c.Data["json"] = map[string]interface{}{"message": "success", "content": "添加成功", "confid": conf.Id, "type": 1}
 		c.ServeJSON()
@@ -164,6 +166,8 @@ func (c *ConController) Edit() {
 		c.ServeJSON()
 		return
 	} else {
+		conf.Pro.Read()
+		mcn.AutoChecknum(conf.Pro.Sign, strings.ToUpper(sign), conf.Filename)
 		//操作记录
 		c.Data["json"] = map[string]interface{}{"message": "success", "content": "修改成功", "type": 1}
 		c.ServeJSON()
@@ -208,6 +212,8 @@ func (c *ConController) Del() {
 		c.ServeJSON()
 		return
 	} else {
+		conf.Pro.Read()
+		mcn.AutoChecknum(conf.Pro.Sign, strings.ToUpper(sign), conf.Filename)
 		//操作记录
 		c.Data["json"] = map[string]interface{}{"message": "success", "content": "删除成功", "type": 1}
 		c.ServeJSON()
@@ -273,6 +279,8 @@ func (c *ConController) Sync() {
 		c.ServeJSON()
 		return
 	} else {
+		conf.Pro.Read()
+		mcn.AutoChecknum(conf.Pro.Sign, strings.ToUpper(sign), conf.Filename)
 		//操作记录
 		c.Data["json"] = map[string]interface{}{"message": "success", "content": "同步成功", "type": 1, "data": data}
 		c.ServeJSON()
@@ -328,16 +336,24 @@ func (c *ConController) Download() {
 	env := c.GetString("env")               //
 	version := c.GetString("version")       //PROVERSION
 	conffilename := c.GetString("filename") //可为空，空时为默认文件
+	round, _ := c.GetInt("round")           //"1"为轮循，空为正常获取
 	line := c.GetString("line")             //空
 	if pro != "" && filetype != "" && env != "" && version != "" {
 		filename := "prohisconf/" + pro + "_" + env + "_" + version + "_" + filetype + "_" + conffilename + ".conf"
-		file, err := utils.GetConf(pro, env, version, filetype, conffilename, line)
+		file, err := utils.GetConf(pro, env, version, filetype, conffilename, round, line)
 		if err != nil {
 			c.Data["data"] = err.Error()
+			beego.Info("配置文件下载出错:", err)
+		} else {
+			if file != nil {
+				c.Data["data"] = string(file.Bytes()[:])
+			} else {
+				c.Data["data"] = ""
+				beego.Warning("配置文件为空")
+			}
+			beego.Info("配置文件下载:" + filename)
 		}
 
-		c.Data["data"] = string(file.Bytes()[:])
-		beego.Info("配置文件下载:" + filename)
 	} else {
 		beego.Info("配置文件下载,缺少参数")
 	}

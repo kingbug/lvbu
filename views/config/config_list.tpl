@@ -776,12 +776,12 @@
 				data:{conf_id: conf_id, value: value, sign: env_sign,},
 				dataType: "json",
 				success: function(msg) {
-					if (msg == "success"){
+					if (msg.message == "success"){
 						if (tmp_env_sign == "oo"){
 							index = td_index +1;
 							tr.find("td:eq(" + index +")").removeClass("select");
 						} else {
-							tr.find("td:eq(1)").removeClass("select");
+							tr.children("td:eq(1)").removeClass("select");
 						}
 						inputtotd(tr);
 						me.siblings("span.ignore").remove();
