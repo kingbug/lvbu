@@ -3,6 +3,7 @@ package project
 import (
 	"fmt"
 	ctl "lvbu/controllers"
+	mcn "lvbu/models/config"
 	mper "lvbu/models/permission"
 	mpro "lvbu/models/project"
 	"lvbu/utils"
@@ -299,7 +300,7 @@ func (c *ProController) FileEdit() {
 			return
 		}
 
-		if err := mpro.EditConf(uint(id), oldfile, filename); err != nil {
+		if err := mcn.Editfilename(uint(id), oldfile, filename); err != nil {
 			c.Data["json"] = map[string]interface{}{"message": "error", "content": "修改失败:" + err.Error(), "type": 3}
 			c.ServeJSON()
 			return

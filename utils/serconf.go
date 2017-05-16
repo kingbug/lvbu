@@ -93,22 +93,24 @@ func GetConf(sign, env, ver, filetype, conffilename string, round int, breaks st
 		var oldverconf []orm.ParamsList
 		env = strings.ToUpper(env)
 		if env == "DE" {
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Dvalue"); err != nil {
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).Filter("Dtstatus__lt", 2).ValuesList(&oldverconf, "Name", "Dvalue"); err != nil {
 				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		} else if env == "QE" {
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Tvalue"); err != nil {
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).Filter("Dtstatus__lt", 3).ValuesList(&oldverconf, "Name", "Tvalue"); err != nil {
 				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		} else { //"OE"
-			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).ValuesList(&oldverconf, "Name", "Ovalue"); err != nil {
+			if _, err := new(mcn.Config).Query().Filter("Pro__Sign", pro_name).Filter("Filename", conffilename).Filter("Tostatus__lt", 3).ValuesList(&oldverconf, "Name", "Ovalue"); err != nil {
 				return conffortype, errors.New("获取最新配置时，数据查询失败:" + err.Error())
 			}
 		}
 		for _, v := range oldverconf {
 			jsonfile[fmt.Sprintf("%s", v[0])] = fmt.Sprintf("%s", v[1])
 		}
-		jsonfile["checknum"] = fmt.Sprintf("%d", mcn.Checknum[sign+"_"+env+"_"+conffilename])
+		if round != 0 {
+			jsonfile["checknum"] = fmt.Sprintf("%d", mcn.Checknum[sign+"_"+env+"_"+conffilename])
+		}
 
 	} else {
 		data, rerr := ioutil.ReadAll(conffile)

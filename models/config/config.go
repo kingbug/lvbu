@@ -92,3 +92,30 @@ func AutoChecknum(sign, env, filename string) {
 	tmpnum := Modifynum[sign+"_"+env+"_"+filename]
 	beego.Debug("Modifynum["+tmpkey+"]有改动", tmpnum)
 }
+
+func Editfilename(pid uint, oldfilename, newfilename string) error {
+	var confs []*Config
+	if _, err := new(Config).Query().Filter("Pro__Id", pid).Filter("Filename", oldfilename).All(&confs, "Id"); err != nil {
+		return err
+	}
+	o := orm.NewOrm()
+	err := o.Begin()
+	var updateerr error
+	for _, v := range confs {
+		v.Filename = newfilename
+		_, updateerr = o.Update(v, "Filename")
+		if updateerr != nil {
+			err = o.Rollback()
+			return err
+		}
+	}
+	updateerr = mpro.EditConf(pid, oldfilename, newfilename)
+	if updateerr != nil {
+		err = o.Rollback()
+		return err
+	} else {
+		err = o.Commit()
+		beego.Info("项目Id:", pid, "改配置文件:", oldfilename, "修改为:", newfilename)
+		return err
+	}
+}
