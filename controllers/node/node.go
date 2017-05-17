@@ -348,7 +348,7 @@ func (c *NodeController) Wsdeploy() {
 	md5path = md5path[:10]
 	var message = make(chan string, 2)
 	var event = make(chan utils.Event, 3)
-	var nodeupdate = make(chan string) //节点的容器ID更改后的容器ID
+	var nodeupdate = make(chan string, 2) //节点的容器ID更改后的容器ID
 	defer ws.Close()
 	if _, ok := err.(websocket.HandshakeError); ok {
 		http.Error(c.Ctx.ResponseWriter, "Not a websocket handshake", 400)
@@ -358,7 +358,6 @@ func (c *NodeController) Wsdeploy() {
 		return
 	}
 	var exitstats = make(chan bool)
-	var updatestats = make(chan bool)
 	go func() { //循环检测节点容器状态
 		var nodes []*mpro.Node
 		if _, err := new(mpro.Node).Query().Filter("Pro__Id", proid).All(&nodes); err != nil {
@@ -385,38 +384,36 @@ func (c *NodeController) Wsdeploy() {
 						break DONE
 					}
 				case node_update_docid := <-nodeupdate:
-					beego.Debug("容器id改变...", nodeupdate)
+					beego.Debug("容器id改变...", node_update_docid)
 					event <- utils.Event{
 						Type:        utils.EVENT_UPDATE_NODE,
 						Nodeid:      strings.Split(node_update_docid, "-")[1],
 						Containerid: strings.Split(node_update_docid, "-")[0],
 					}
-				case isupdate := <-updatestats:
-					if isupdate {
-						for _, v := range tmp_nodes {
-							beego.Debug(v)
-						}
-						beego.Debug("检测到更新容器")
+					for _, v := range tmp_nodes {
+						beego.Debug("容器更新前:", v)
+					}
+					beego.Debug("检测到更新容器")
 
-						tmp_nodes = nil
-						if _, err := new(mpro.Node).Query().Filter("Pro__Id", proid).All(&nodes); err != nil {
-							beego.Error("查询数据库出错", err)
-						} else if len(nodes) > 0 {
-							for _, node := range nodes {
-								if node.DocId == "" {
-									continue
-								}
-								if err := node.Mac.Read(); err != nil {
-									beego.Error("查询节点所属主机出错", err)
-								}
-								utils.Updatenode(node.Mac.Id, node)
-								tmp_nodes = append(tmp_nodes, node)
+					tmp_nodes = nil
+					if _, err := new(mpro.Node).Query().Filter("Pro__Id", proid).Filter("Mac__Env__Name", strings.Split(node_update_docid, "-")[2]).All(&nodes); err != nil {
+						beego.Error("查询数据库出错", err)
+					} else if len(nodes) > 0 {
+						for _, node := range nodes {
+							if node.DocId == "" {
+								continue
 							}
-						}
-						for _, v := range tmp_nodes {
-							beego.Debug(v)
+							if err := node.Mac.Read(); err != nil {
+								beego.Error("查询节点所属主机出错", err)
+							}
+							utils.Updatenode(node.Mac.Id, node)
+							tmp_nodes = append(tmp_nodes, node)
 						}
 					}
+					for _, v := range tmp_nodes {
+						beego.Debug("容器更新后:", v)
+					}
+
 				default:
 					events, err := utils.Cliinspectcon(tmp_nodes)
 					if err != nil {
@@ -444,9 +441,9 @@ func (c *NodeController) Wsdeploy() {
 	//websocket 发送信息
 	go func() {
 		for {
-			contron := false
 			select {
 			case data_event := <-event:
+				beego.Debug("发送消息", data_event)
 				data, err := json.Marshal(data_event)
 				if err != nil {
 					beego.Error("序列化EVENT TO json 出错:", err)
@@ -455,23 +452,11 @@ func (c *NodeController) Wsdeploy() {
 					beego.Error("websocket写入出错:", err.Error())
 				}
 			case mes := <-message:
+				beego.Debug("收到消息", mes)
 				event <- utils.Event{
 					Type:    utils.EVENT_MESSAGE,
 					Message: mes,
 				}
-				if strings.Contains(mes, "error") {
-					updatestats <- true
-					beego.Info("处理结束error")
-					contron = true
-				}
-				if mes == "success" {
-					updatestats <- true
-					beego.Info("处理结束success")
-					contron = true
-				}
-			}
-			if contron {
-				beego.Info("处理完成")
 			}
 		}
 	}()
@@ -621,7 +606,7 @@ RECEIVE:
 				message <- "error:" + createerr.Error() //客户端创建容器失败,
 				beego.Error("创建容器出错", createerr.Error())
 			} else if err := utils.Clistartcon(node.Mac.Adminurl, node_docid); err != nil {
-				nodeupdate <- node_docid + "-" + strconv.FormatUint(uint64(node.Id), 10)
+
 				node.DocId = node_docid
 				node.CurVer = utils.VerlisttoString(node_ver)
 				if err := node.Update(); err != nil {
@@ -631,11 +616,12 @@ RECEIVE:
 						message <- "回滚事件删除容器error:" + err.Error()
 					}
 				} else {
+					nodeupdate <- node_docid + "-" + strconv.FormatUint(uint64(node.Id), 10) + "-" + node.Mac.Env.Name
 					utils.Updatenode(node.Mac.Id, &node)
 				}
 				message <- "error:" + err.Error()
 			} else {
-				nodeupdate <- node_docid + "-" + strconv.FormatUint(uint64(node.Id), 10)
+				nodeupdate <- node_docid + "-" + strconv.FormatUint(uint64(node.Id), 10) + "-" + node.Mac.Env.Name
 				message <- "容器已启动"
 				node.DocId = node_docid
 				node.CurVer = utils.VerlisttoString(node_ver)
