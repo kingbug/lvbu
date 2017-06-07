@@ -145,7 +145,7 @@
 																	{{$pid := .Id}}
 																	
 																		{{ range $index, $filename := .Conflist}}
-																			<a class=' btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			<a class=' btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  >
 																			{{ if $filename}}
 																				{{$filename}}
 																			{{else}}
@@ -153,7 +153,7 @@
 																			{{end}}
 																			</a>
 																		{{else}}
-																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  >默认文件</a>
 																		{{end}}
 																			
 																	">
@@ -229,7 +229,7 @@
 																	{{$pid := .Id}}
 																	
 																		{{ range $index, $filename := .Conflist}}
-																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}' >
 																			{{ if $filename}}
 																				{{$filename}}
 																			{{else}}
@@ -237,7 +237,7 @@
 																			{{end}}
 																			</a>
 																		{{else}}
-																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/' >默认文件</a>
 																		{{end}}
 																			
 																	">
@@ -324,7 +324,7 @@
 																	{{$pid := .Id}}
 																	
 																		{{ range $index, $filename := .Conflist}}
-																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}'  target='_blank'>
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/?filename={{$filename}}' >
 																			{{ if $filename}}
 																				{{$filename}}
 																			{{else}}
@@ -332,7 +332,7 @@
 																			{{end}}
 																			</a>
 																		{{else}}
-																			<a class='btn list-group-item' href='/{{$pid}}/conlist/'  target='_blank'>默认文件</a>
+																			<a class='btn list-group-item' href='/{{$pid}}/conlist/' >默认文件</a>
 																		{{end}}
 																			
 																	">
@@ -567,7 +567,7 @@
 					$("#ver_break").click();
 					if (msg.message == "success"){
 						alertmessage(msg.type,msg.content);
-						popoverhtmlstring = popoverhtmlstring + "<a class='btn list-group-item' href='/"+pid+"/conlist/?filename=" + filename + "'  target='_blank'>" + filename + "</a>";
+						popoverhtmlstring = popoverhtmlstring + "<a class='btn list-group-item' href='/"+pid+"/conlist/?filename=" + filename + "' >" + filename + "</a>";
 		
 						$("#popover"+pid).attr("data-content", popoverhtmlstring);
 						return;
